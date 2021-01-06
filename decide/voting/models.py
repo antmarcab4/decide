@@ -35,11 +35,10 @@ class Voting(models.Model):
     question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
 
     # Atributos para obtener número de preguntas
-    qOption = models.IntegerField()
-    def options(self):
-        return self.question.options.count()
-
-    qOption = options 
+    qOption = models.IntegerField(blank=True, null=True)
+    def save(self):
+        self.qOption = self.question.options.count()
+        return super().save()
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
