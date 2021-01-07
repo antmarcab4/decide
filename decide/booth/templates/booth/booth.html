@@ -63,13 +63,17 @@
                 
                 </b-form-radio-group>
                 <span>
-                    {{selected}}
+                    [[selected]]
                 </span>
                 
                 <b-button type="button" variant="primary" v-on:click="decideSend">
                     {% trans "Vote" %}
                 </b-button>
+        
             </div> 
+
+
+
         </div>
     </div>
 {% endblock %}
@@ -186,10 +190,19 @@
                     this.signup = true;
                 },
                 decideEncrypt() {
-                    var bigmsg = BigInt.fromJSONObject(this.selected.toString());
+                    var a = 0;
+                    Array.prototype.forEach.call(this.selected, number => a = a + number + "0");
+                    console.log(a);
+                    var bigmsg = BigInt.fromJSONObject(a);
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
                     return cipher;
                 },
+             /*   convertArrayToNumber(selection) {
+                    var a = 0;
+                    Array.prototype.forEach.call(selection, number => a = a + number + "0");
+                    console.log(a);
+                    this.selected=parseInt(a);
+                },*/
                 decideSend(evt) {
                     evt.preventDefault();
                     var v = this.decideEncrypt();
