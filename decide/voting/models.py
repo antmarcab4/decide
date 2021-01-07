@@ -14,6 +14,9 @@ class Question(models.Model):
         return self.desc
 
 
+
+
+
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
@@ -31,7 +34,8 @@ class QuestionOption(models.Model):
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
-    question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
+    question = models.ManyToManyField(Question, related_name='votings')
+
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
