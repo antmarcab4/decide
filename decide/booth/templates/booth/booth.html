@@ -52,7 +52,6 @@
             <!-- Voting -->
             <div v-if="!signup && voting.question.preferences == false">
                 <h2>[[ voting.question.desc ]]</h2>
-                <h2> hola </h2>
                 <b-form-group v-for="opt in voting.question.options" :key="opt.number">
                     <b-form-radio v-model="selected"
                                   :id="'q' + opt.number"
@@ -67,18 +66,15 @@
             </div>
 
             <!-- Voting preferences -->
-            <div v-if="!signup == true && voting.question.preferences == true" >
+            <div v-if="!signup && voting.question.preferences == true" >
                 <h2>[[ voting.question.desc ]]</h2>
-                <h2>[[ voting.question.preferences ]]</h2>
-                <h2>[[ voting.qOption ]]</h2>
-                <b-form-group v-for="opt in voting.question.options" :key="opt.number">
-                    <b-form-radio v-model="selected"
-                                  :id="'q' + opt.number"
-                                  name="question"
-                                  :value="opt.number">
-                        [[ opt.option ]]
-                    </b-form-radio>
-                </b-form-group>
+                <b-form-group v-for="key in voting.qOption" >
+                    <span>[[key]] </span>
+                    <select :key="key" v-model="selected[key]">
+                        <option v-for= "opt in voting.question.options">[[opt.option]]</option>
+                    </select>
+                </b-form-group>  
+                <span>Seleccionado: {{ selected }}</span>
                 <b-button type="button" variant="primary" v-on:click="decideSend">
                     {% trans "Vote" %}
                 </b-button>
@@ -112,7 +108,8 @@
             data: {
                 keybits: {{ KEYBITS }},
                 voting: voting,
-                selected: "",
+                selected: [],
+
                 signup: true,
                 alertShow: false,
                 alertMsg: "",
