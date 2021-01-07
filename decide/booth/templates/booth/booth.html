@@ -55,13 +55,17 @@
                     <h2>[[ ques.desc ]]</h2>
                         
                             <b-form-radio v-for="opt in ques.options"  
-                                        :id="'q' + opt.number"
+                                        :id="'q' + ques.id + opt.number"
                                         name="question"
                                         :value="opt.number">
                                 [[ opt.option ]]
                             </b-form-radio>
-                     
+                
                 </b-form-radio-group>
+                <span>
+                    {{selected}}
+                </span>
+                
                 <b-button type="button" variant="primary" v-on:click="decideSend">
                     {% trans "Vote" %}
                 </b-button>
