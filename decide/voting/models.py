@@ -26,14 +26,21 @@ def check_question(sender, instance, **kwargs):
 
 
 class QuestionOption(models.Model):
-   question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
     def save(self):
         if not self.number:
             self.number = self.question.options.count() + 2
-        return super().save()
+
+        if self.question.si_no and self.question.options.count()==2:
+            raise ValidationError('This type of question must not have other options added by you.')
+
+        if self.question.si_no and not((self.number==1 and self.option=="Si") or (self.number==2 and self.option=="No")):
+            raise ValidationError('This type of question must not have other options added by you.')
+        else:
+            return super().save()
 
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
