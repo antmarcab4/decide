@@ -10,7 +10,9 @@ from base.models import Auth, Key
 
 class Question(models.Model):
     desc = models.TextField()
+    preferences = models.BooleanField(default=False,verbose_name="Preferences", help_text="Check for creating a preference question")
     si_no = models.BooleanField(default=False,verbose_name="Yes/No question", help_text="Check the box to automatically add the 'Si' and 'No' options. Take into account that no more options will be admited. ")
+
     def __str__(self):
         return self.desc
 
@@ -47,6 +49,12 @@ class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
+
+    # Atributos para obtener número de preguntas
+    qOption = models.IntegerField(blank=True, null=True)
+    def save(self):
+        self.qOption = self.question.options.count()
+        return super().save()
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
@@ -135,4 +143,5 @@ class Voting(models.Model):
         self.save()
 
     def __str__(self):
-        return self.name
+        #return self.name
+        return '{} ({})'.format(self.name, self.qOption)

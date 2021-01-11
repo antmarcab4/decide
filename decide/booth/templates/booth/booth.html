@@ -50,7 +50,7 @@
             </b-form>
 
             <!-- Voting -->
-            <div v-if="!signup">
+            <div v-if="!signup && voting.question.preferences == false">
                 <h2>[[ voting.question.desc ]]</h2>
                 <b-form-group v-for="opt in voting.question.options" :key="opt.number">
                     <b-form-radio v-model="selected"
@@ -60,12 +60,35 @@
                         [[ opt.option ]]
                     </b-form-radio>
                 </b-form-group>
+                <span>Seleccionado: [[ selected ]]</span>
                 <b-button type="button" variant="primary" v-on:click="decideSend">
                     {% trans "Vote" %}
                 </b-button>
             </div>
+
+            <!-- Voting preferences -->
+            
+            <div v-if="!signup && voting.question.preferences == true">
+                <h2>[[ voting.question.desc ]]</h2>
+                <b-form-group v-for="qopt in voting.qOption" :key="voting.question.options.number">
+                    <span> Preferencia [[qopt]] </span>
+                    <select v-model="selected[qopt-1]">
+                        <option disabled value="">Seleccione una opción</option>
+                        <option v-for= "opt in voting.question.options" 
+                        :id="'q' + opt.number"
+                        name="question"
+                        :value="opt.number">
+                        [[opt.option]]
+                        </option>
+                    </select>
+                </b-form-group>
+                <span>Seleccionado: [[ selected ]]</span>
+                <b-button type="button" variant="primary" v-on:click="decideSendFor">
+                    {% trans "Vote" %}
+                </b-button>
+            </div>
         </div>
-    </div>
+    </div> 
 {% endblock %}
 
 {% block extrabody %}
@@ -93,7 +116,8 @@
             data: {
                 keybits: {{ KEYBITS }},
                 voting: voting,
-                selected: "",
+                selected: [],
+
                 signup: true,
                 alertShow: false,
                 alertMsg: "",
@@ -184,6 +208,41 @@
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
                     return cipher;
                 },
+
+               decideSendFor(evt) {
+                    var i = 0;
+                    for(i = 0; i<this.voting.qOption; i++){
+                        this.decideSendM(evt, i);
+                    }
+                }, 
+
+                decideEncryptMult(i) {
+                    var bigmsg = BigInt.fromJSONObject(this.selected[i].toString());
+                    var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                    console.log(cipher);
+                    return cipher;
+                },
+
+                decideSendM(evt, i) {
+                    evt.preventDefault();
+                    var v = this.decideEncryptMult(i);
+                    console.log(v);
+                    var data = {
+                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                        voting: this.voting.id,
+                        voter: this.user.id,
+                        token: this.token
+                    }
+                    console.log(data);
+                    this.postData("{% url "gateway" "store" "/" %}", data)
+                        .then(data => {
+                            this.showAlert("success", '{% trans "Conglatulations. Your vote has been sent" %}');
+                        })
+                        .catch(error => {
+                            this.showAlert("danger", '{% trans "Error: " %}' + error);
+                        });
+                },
+
                 decideSend(evt) {
                     evt.preventDefault();
                     var v = this.decideEncrypt();
