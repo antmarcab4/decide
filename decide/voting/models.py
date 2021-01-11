@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
 
 from base import mods
 from base.models import Auth, Key
@@ -10,10 +11,18 @@ from base.models import Auth, Key
 class Question(models.Model):
     desc = models.TextField()
     preferences = models.BooleanField(default=False,verbose_name="Preferences", help_text="Check for creating a preference question")
+    si_no = models.BooleanField(default=False,verbose_name="Yes/No question", help_text="Check the box to automatically add the 'Si' and 'No' options. Take into account that no more options will be admited. ")
 
     def __str__(self):
         return self.desc
 
+@receiver(post_save, sender=Question)
+def check_question(sender, instance, **kwargs):
+    if instance.si_no==True:
+        option1 = QuestionOption(question=instance, number=1, option="Si")
+        option1.save()
+        option2 = QuestionOption(question=instance, number=2, option="No") 
+        option2.save()
 
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
@@ -23,12 +32,19 @@ class QuestionOption(models.Model):
     def save(self):
         if not self.number:
             self.number = self.question.options.count() + 2
-        return super().save()
+
+        if self.question.si_no and self.question.options.count()==2:
+            raise ValidationError('This type of question must not have other options added by you.')
+
+        if self.question.si_no and not((self.number==1 and self.option=="Si") or (self.number==2 and self.option=="No")):
+            raise ValidationError('This type of question must not have other options added by you.')
+        else:
+            return super().save()
 
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
 
-
+        
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)

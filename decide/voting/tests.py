@@ -15,7 +15,35 @@ from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
 from voting.models import Voting, Question, QuestionOption
 
+class VotingQuestionTestCase(BaseTestCase):
+    def setUp(self):
+        super().setUp()
 
+    def tearDown(self):
+        super().tearDown()
+
+#Tests añadidos por Antonio y Jose:
+    def test_create_yes_no_question(self):
+        q = Question(desc='si/no question', si_no=True)
+        q.save()
+        a = q.options.count()==2
+        option1 = q.options.all()[0]
+        option2 = q.options.all()[1]
+        b = (opt1.number==1 and opt1.option=="Si")
+        c = (opt2.number==2 and opt2.option=="No")
+        self.assertTrue(a and b and c)
+
+    def test_create_yes_no_question_wrong(self):
+        #TODO       Buscar como chequear que salte una excepción, en este caso,
+        #           la de validación que sala al intentar incluir más opciones con la marca de yes/no
+        q = Question(desc='si/no question', si_no=True)
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+        q.save()
+        assertRaises(ValidationError, Question, si_no, **kwds)
+#Fin de tests añadidos por Antonio y Jose
+        
 class VotingTestCase(BaseTestCase):
 
     def setUp(self):
