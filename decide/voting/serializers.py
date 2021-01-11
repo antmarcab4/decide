@@ -14,11 +14,12 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     options = QuestionOptionSerializer(many=True)
     class Meta:
         model = Question
-        fields = ('desc', 'options', 'preferences')
+        fields = ('id','desc', 'options', 'preferences')
+
 
 
 class VotingSerializer(serializers.HyperlinkedModelSerializer):
-    question = QuestionSerializer(many=False)
+    question = QuestionSerializer(many=True)
     pub_key = KeySerializer()
     auths = AuthSerializer(many=True)
 
