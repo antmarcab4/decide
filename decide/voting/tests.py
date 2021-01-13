@@ -40,9 +40,10 @@ class VotingQuestionTestCase(BaseTestCase):
         q = Question(desc='si/no question', si_no=True)
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
-            opt.save()
-        q.save()
-        self.assertRaises(ValidationError, self.options.save)
+            self.assertRaises(ValidationError, opt.clean)
+            
+        
+
 
     
 #Fin de tests añadidos por Antonio y Jose
