@@ -15,7 +15,12 @@ class Question(models.Model):
     # Atributos para obtener número de preguntas
     qOption = models.IntegerField(blank=True, null=True)
     qOption=3
-    
+
+    def clean(self):
+        if self.si_no:
+            raise ValidationError('You can not make a question of the type yes/no and preferences at the same time')
+
+
     def __str__(self):
         return self.desc
     
@@ -36,6 +41,7 @@ class QuestionOption(models.Model):
     option = models.TextField()
 
     def clean(self):
+        
         if not self.number:
             self.number = self.question.options.count() + 2
 
@@ -44,8 +50,8 @@ class QuestionOption(models.Model):
 
         if self.question.si_no and not((self.number==1 and self.option=="Si") or (self.number==2 and self.option=="No")):
             raise ValidationError('This type of question must not have other options added by you.')
-        if self.question.si_no and self.question.preferences:
-            raise ValidationError('You can not make a question of the type yes/no and preferences at the same time')
+        
+        
 
     def save(self):
         return super().save()
