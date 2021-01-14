@@ -51,21 +51,37 @@
 
             <!-- Voting -->
             <div v-if="!signup">
-                <b-form-radio-group v-for="ques,key in voting.question" :key="key" v-model="selected[key]" stacked>
+                <b-form-group v-for="ques,key in voting.question" :key="key"  >
                     <h2>[[ ques.desc ]]</h2>
-                        
-                            <b-form-radio v-for="opt in ques.options"  
-                                        :id="'q' + ques.id + opt.number"
+                        <div v-if="ques.preferences == false">
+                            <b-form-radio-group v-model="selected[key]" stacked>
+                                <b-form-radio v-for="opt in ques.options"  
+                                            :id="'q' + ques.id + opt.number"
+                                            name="question"
+                                            :value="opt.number">
+                                    [[ opt.option ]]
+                                </b-form-radio>
+                            </b-form-radio-group>
+                        </div>
+                        <div v-if = "ques.preferences == true">
+                            <div v-for ="qopt,key1 in ques.options" >
+                                <span>Preferencia [[key1+1]]:</span>
+                                <b-form-select v-model="arrayPreferences[key1]">
+                                    <option value="">Seleccione una opción</option>
+                                    <option v-for= "opt in ques.options" 
+                                        :id="'q' + opt.number" 
                                         name="question"
                                         :value="opt.number">
-                                [[ opt.option ]]
-                            </b-form-radio>
-                
-                </b-form-radio-group>
+                                        [[opt.option]]
+                                    </option>
+                                </b-form-select> 
+                            </div>
+                            <span v-model="selected[key]=arrayPreferences"></span>
+                        </div>
+                </b-form-group>
                 <span>
                     [[selected]]
                 </span>
-                
                 <b-button type="button" variant="primary" v-on:click="decideSend">
                     {% trans "Vote" %}
                 </b-button>
@@ -95,6 +111,7 @@
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
 
+
     <script>
         var voting = {{voting|safe}};
         var app = new Vue({
@@ -104,6 +121,7 @@
                 keybits: {{ KEYBITS }},
                 voting: voting,
                 selected: [],
+                arrayPreferences: [],
                 signup: true,
                 alertShow: false,
                 alertMsg: "",
@@ -189,6 +207,41 @@
                     document.cookie = 'decide=;';
                     this.signup = true;
                 },
+
+                ecideSendFor(evt) {
+                    var i = 0;
+                    for(i = 0; i<this.voting.qOption; i++){
+                        this.decideSendM(evt, i);
+                    }
+                }, 
+
+                decideEncryptMult(i) {
+                    var bigmsg = BigInt.fromJSONObject(this.selected[i].toString());
+                    var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                    console.log(cipher);
+                    return cipher;
+                },
+
+                decideSendM(evt, i) {
+                    evt.preventDefault();
+                    var v = this.decideEncryptMult(i);
+                    console.log(v);
+                    var data = {
+                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                        voting: this.voting.id,
+                        voter: this.user.id,
+                        token: this.token
+                    }
+                    console.log(data);
+                    this.postData("{% url "gateway" "store" "/" %}", data)
+                        .then(data => {
+                            this.showAlert("success", '{% trans "Conglatulations. Your vote has been sent" %}');
+                        })
+                        .catch(error => {
+                            this.showAlert("danger", '{% trans "Error: " %}' + error);
+                        });
+                },
+                
                 decideEncrypt() {
                     var a = 0;
                     Array.prototype.forEach.call(this.selected, number => a = a + number + "0");
