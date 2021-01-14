@@ -209,34 +209,6 @@
                     document.cookie = 'decide=;';
                     this.signup = true;
                 },
-
-                ecideSendFor(evt) {
-                    var i = 0;
-                    for(i = 0; i<this.voting.qOption; i++){
-                        this.decideSendM(evt, i);
-                    }
-                }, 
-
-                decideEncryptMult(i) {
-                    var bigmsg = BigInt.fromJSONObject(this.selected[i].toString());
-                    var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
-                    console.log(cipher);
-                    return cipher;
-                },
-
-                decideSendM(evt) {
-                    for(question in this.voting.question){
-                        if (this.arrayPreferences){
-                            this.errors = [];
-                            uniqueSet = new Set();
-                            uniqueSet = new Set(this.arrayPreferences);
-                            if (uniqueSet.size!=question.option.count()){
-                            this.errors.push('ESO NI SE TE OCURRA');
-                            }
-                           evt.preventDefault(); 
-                        }
-                    }
-                },
                 
                 decideEncrypt() {
                     var bigmsg = BigInt.fromJSONObject(this.selected.toString());
@@ -244,21 +216,17 @@
                     return cipher;
                 },
                 decideSend(evt) {
-                    //for(var opts in this.voting.question.options){
-
-                        if (this.arrayPreferences){
-                            this.errors = [];
-                            uniqueSet = new Set();
-                            uniqueSet = new Set(this.arrayPreferences);
-                            if (uniqueSet.size!=this.arrayPreferences){
-                            this.errors.push('You must select all possible values');
-                            }
-                           evt.preventDefault(); 
+                    if (this.arrayPreferences){
+                        this.errors = [];
+                        uniqueSet = new Set();
+                        uniqueSet = new Set(this.arrayPreferences);
+                        if (uniqueSet.size!=this.arrayPreferences.length){
+                        this.errors.push('You must select all possible values');
                         }
-                    //}
+                        evt.preventDefault(); 
+                    }
 
                     if(this.errors.length==0){
-
                         evt.preventDefault();
                         var v = this.decideEncrypt();
                         var data = {

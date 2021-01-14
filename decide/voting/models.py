@@ -14,6 +14,7 @@ class Question(models.Model):
     preferences = models.BooleanField(default=False,verbose_name="Preferences", help_text="Check for creating a preference question")
     def __str__(self):
         return self.desc
+
 @receiver(post_save, sender=Question)
 def check_question(sender, instance, **kwargs):
     if instance.si_no==True:
