@@ -51,7 +51,7 @@
 
             <!-- Voting -->
             <div v-if="!signup">
-                <b-form-group v-for="ques,key in voting.question" :key="key"  >
+                <b-form-group v-for="ques,key in voting.question" :key="key">
                     <h2>[[ ques.desc ]]</h2>
                         <div v-if="ques.preferences == false">
                             <b-form-radio-group v-model="selected[key]" stacked>
@@ -64,10 +64,15 @@
                             </b-form-radio-group>
                         </div>
                         <div v-if = "ques.preferences == true">
+                            <p v-if="errors.length">
+                                <ul>
+                                <li v-for="error in errors">[[ error ]]</li>
+                                </ul>
+                            </p>
                             <div v-for ="qopt,key1 in ques.options" >
                                 <span>Preferencia [[key1+1]]:</span>
                                 <b-form-select v-model="arrayPreferences[key1]">
-                                    <option value="">Seleccione una opción</option>
+                                    <option disabled>Seleccione una opción</option>
                                     <option v-for= "opt in ques.options" 
                                         :id="'q' + opt.number" 
                                         name="question"
@@ -114,6 +119,7 @@
             delimiters: ['[[', ']]'],
             el: '#app-booth',
             data: {
+                errors: [],
                 keybits: {{ KEYBITS }},
                 voting: voting,
                 selected: [],
@@ -218,24 +224,18 @@
                     return cipher;
                 },
 
-                decideSendM(evt, i) {
-                    evt.preventDefault();
-                    var v = this.decideEncryptMult(i);
-                    console.log(v);
-                    var data = {
-                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
-                        voting: this.voting.id,
-                        voter: this.user.id,
-                        token: this.token
+                decideSendM(evt) {
+                    for(question in this.voting.question){
+                        if (this.arrayPreferences){
+                            this.errors = [];
+                            uniqueSet = new Set();
+                            uniqueSet = new Set(this.arrayPreferences);
+                            if (uniqueSet.size!=question.option.count()){
+                            this.errors.push('ESO NI SE TE OCURRA');
+                            }
+                           evt.preventDefault(); 
+                        }
                     }
-                    console.log(data);
-                    this.postData("{% url "gateway" "store" "/" %}", data)
-                        .then(data => {
-                            this.showAlert("success", '{% trans "Conglatulations. Your vote has been sent" %}');
-                        })
-                        .catch(error => {
-                            this.showAlert("danger", '{% trans "Error: " %}' + error);
-                        });
                 },
                 
                 decideEncrypt() {
@@ -244,21 +244,37 @@
                     return cipher;
                 },
                 decideSend(evt) {
-                    evt.preventDefault();
-                    var v = this.decideEncrypt();
-                    var data = {
-                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
-                        voting: this.voting.id,
-                        voter: this.user.id,
-                        token: this.token
-                    }
-                    this.postData("{% url "gateway" "store" "/" %}", data)
-                        .then(data => {
-                            this.showAlert("success", '{% trans "Conglatulations. Your vote has been sent" %}');
-                        })
-                        .catch(error => {
-                            this.showAlert("danger", '{% trans "Error: " %}' + error);
-                        });
+                    //for(var opts in this.voting.question.options){
+
+                        if (this.arrayPreferences){
+                            this.errors = [];
+                            uniqueSet = new Set();
+                            uniqueSet = new Set(this.arrayPreferences);
+                            if (uniqueSet.size!=this.arrayPreferences){
+                            this.errors.push('You must select all possible values');
+                            }
+                           evt.preventDefault(); 
+                        }
+                    //}
+
+                    if(this.errors.length==0){
+
+                        evt.preventDefault();
+                        var v = this.decideEncrypt();
+                        var data = {
+                           vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                            voting: this.voting.id,
+                            voter: this.user.id,
+                            token: this.token
+                        }
+                        this.postData("{% url "gateway" "store" "/" %}", data)
+                            .then(data => {
+                                this.showAlert("success", '{% trans "Conglatulations. Your vote has been sent" %}');
+                            })
+                            .catch(error => {
+                                this.showAlert("danger", '{% trans "Error: " %}' + error);
+                            });
+                    }    
                 },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;
