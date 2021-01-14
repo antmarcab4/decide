@@ -91,7 +91,7 @@ class Voting(models.Model):
         '''
         The tally is a shuffle and then a decrypt
         '''
-
+        
         votes = self.get_votes(token)
 
         auth = self.auths.first()
