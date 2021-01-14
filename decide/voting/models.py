@@ -11,9 +11,15 @@ from base.models import Auth, Key
 class Question(models.Model):
     desc = models.TextField()
     si_no = models.BooleanField(default=False,verbose_name="Yes/No question", help_text="Check the box to automatically add the 'Si' and 'No' options. Take into account that no more options will be admited. ")
+    preferences = models.BooleanField(default=False,verbose_name="Preferences", help_text="Check for creating a preference question")
+    # Atributos para obtener número de preguntas
+    qOption = models.IntegerField(blank=True, null=True)
+    qOption=3
+    
     def __str__(self):
         return self.desc
-
+    
+    
 @receiver(post_save, sender=Question)
 def check_question(sender, instance, **kwargs):
     if instance.si_no==True:
@@ -24,16 +30,22 @@ def check_question(sender, instance, **kwargs):
 
 
 
-
 class QuestionOption(models.Model):
-   question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
     def save(self):
         if not self.number:
             self.number = self.question.options.count() + 2
-        return super().save()
+
+        if self.question.si_no and self.question.options.count()==2:
+            raise ValidationError('This type of question must not have other options added by you.')
+
+        if self.question.si_no and not((self.number==1 and self.option=="Si") or (self.number==2 and self.option=="No")):
+            raise ValidationError('This type of question must not have other options added by you.')
+        else:
+            return super().save()
 
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
