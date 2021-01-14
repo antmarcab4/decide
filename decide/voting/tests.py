@@ -94,6 +94,50 @@ class VotingQuestionTestCase(BaseTestCase):
         v = self.create_multiquestion_voting()
         self.assertEqual(v.question.all().count(), 2)
 
+
+#Test añadidos por Manuel
+class VotingModelTC(BaseTestCase):
+
+    def setUp(self):
+        q1 = Question(desc="test question1")
+        q1.save()
+        q2 = Question(desc="test question2")
+        q2.save()
+        q3 = Question(desc="test question3")
+        q3.save()
+
+        opt1 = QuestionOption(question=q1,option="option1")
+        opt2 = QuestionOption(question=q1,option="option2")
+        opt3 = QuestionOption(question=q2,option="option3")
+        opt4 = QuestionOption(question=q2,option="option4")
+        opt5 = QuestionOption(question=q3,option="option5")
+        opt6 = QuestionOption(question=q3,option="option6")
+
+
+        v=Voting(name="Votacion")
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        
+        v.auths.add(a)
+        v.question.add(q1)
+        v.question.add(q2)
+        v.question.add(q3)
+        
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        self.v=None
+
+    def test_create_multi(self):
+        v = Voting.objects.get(name="Votacion")
+        self.assertEquals(v.name,"Votacion")
+    
+    def test_questions_multi(self):
+        v = Voting.objects.get(name="Votacion")
+        self.assertEquals(v.question.all().count(),3)
+
 '''     
 class VotingTestCase(BaseTestCase):
 
