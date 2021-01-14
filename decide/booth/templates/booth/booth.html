@@ -51,19 +51,29 @@
 
             <!-- Voting -->
             <div v-if="!signup">
-                <h2>[[ voting.question.desc ]]</h2>
-                <b-form-group v-for="opt in voting.question.options" :key="opt.number">
-                    <b-form-radio v-model="selected"
-                                  :id="'q' + opt.number"
-                                  name="question"
-                                  :value="opt.number">
-                        [[ opt.option ]]
-                    </b-form-radio>
-                </b-form-group>
+                <b-form-radio-group v-for="ques,key in voting.question" :key="key" v-model="selected[key]" stacked>
+                    <h2>[[ ques.desc ]]</h2>
+                        
+                            <b-form-radio v-for="opt in ques.options"  
+                                        :id="'q' + ques.id + opt.number"
+                                        name="question"
+                                        :value="opt.number">
+                                [[ opt.option ]]
+                            </b-form-radio>
+                
+                </b-form-radio-group>
+                <span>
+                    [[selected]]
+                </span>
+                
                 <b-button type="button" variant="primary" v-on:click="decideSend">
                     {% trans "Vote" %}
                 </b-button>
-            </div>
+        
+            </div> 
+
+
+
         </div>
     </div>
 {% endblock %}
@@ -93,7 +103,7 @@
             data: {
                 keybits: {{ KEYBITS }},
                 voting: voting,
-                selected: "",
+                selected: [],
                 signup: true,
                 alertShow: false,
                 alertMsg: "",
@@ -180,10 +190,19 @@
                     this.signup = true;
                 },
                 decideEncrypt() {
-                    var bigmsg = BigInt.fromJSONObject(this.selected.toString());
+                    var a = 0;
+                    Array.prototype.forEach.call(this.selected, number => a = a + number + "0");
+                    console.log(a);
+                    var bigmsg = BigInt.fromJSONObject(a);
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
                     return cipher;
                 },
+             /*   convertArrayToNumber(selection) {
+                    var a = 0;
+                    Array.prototype.forEach.call(selection, number => a = a + number + "0");
+                    console.log(a);
+                    this.selected=parseInt(a);
+                },*/
                 decideSend(evt) {
                     evt.preventDefault();
                     var v = this.decideEncrypt();
