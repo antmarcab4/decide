@@ -12,9 +12,6 @@ class Question(models.Model):
     desc = models.TextField()
     si_no = models.BooleanField(default=False,verbose_name="Yes/No question", help_text="Check the box to automatically add the 'Si' and 'No' options. Take into account that no more options will be admited. ")
     preferences = models.BooleanField(default=False,verbose_name="Preferences", help_text="Check for creating a preference question")
-    # Atributos para obtener número de preguntas
-    qOption = models.IntegerField(blank=True, null=True)
-    qOption=3
     
     def __str__(self):
         return self.desc
@@ -123,7 +120,7 @@ class Voting(models.Model):
 
     def do_postproc(self):
         tally = self.tally
-        options = self.question.options.all()
+        options = self.question.all()[0].options.all()
 
         opts = []
         for opt in options:

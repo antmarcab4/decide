@@ -270,7 +270,6 @@
                         voter: this.user.id,
                         token: this.token
                     }
-                    console.log(data.token)
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {
                             this.showAlert("success", '{% trans "Conglatulations. Your vote has been sent" %}');
