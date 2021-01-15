@@ -15,8 +15,7 @@ class Question(models.Model):
 
     def __str__(self):
         return self.desc
-    
-    
+
 @receiver(post_save, sender=Question)
 def check_question(sender, instance, **kwargs):
     if instance.si_no==True:
@@ -56,7 +55,6 @@ class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     question = models.ManyToManyField(Question, related_name='votings')
-
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)

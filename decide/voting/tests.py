@@ -55,6 +55,14 @@ class VotingQuestionTestCase(BaseTestCase):
         q1 = Question(desc='question1')
         q1.save()
         
+#Tests añadidos por Alonso y David:
+     def test_create_preferences_question(self):
+        q = Question(desc='Preferences question', preferences=True)
+        q.save()
+        self.assertTrue(q.preferences = True)
+
+
+        
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
             opt.save()
@@ -146,7 +154,7 @@ class VotingModelTC(BaseTestCase):
 class VotingTestCase(BaseTestCase):
 
     def setUp(self):
-        super().setUp()
+U        super().setUp()
 
     def tearDown(self):
         super().tearDown()
