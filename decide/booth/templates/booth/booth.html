@@ -90,7 +90,11 @@
                 <b-button type="button" variant="primary" v-on:click="decideSend">
                     {% trans "Vote" %}
                 </b-button>
+        
             </div> 
+
+
+
         </div>
     </div>
 {% endblock %}
@@ -209,12 +213,26 @@
                     document.cookie = 'decide=;';
                     this.signup = true;
                 },
-                
                 decideEncrypt() {
-                    var bigmsg = BigInt.fromJSONObject(this.selected.toString());
-                    var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                    var a = 0;
+                    if(this.selected.length>1){
+                        Array.prototype.forEach.call(this.selected, number => a = a + number + "0");
+                        var bigmsg = BigInt.fromJSONObject(a);
+                        var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                        console.log(a);
+                    }else{
+                        console.log(this.selected[0].toString())
+                        var bigmsg = BigInt.fromJSONObject(this.selected[0].toString());
+                        var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                    }
                     return cipher;
                 },
+             /*   convertArrayToNumber(selection) {
+                    var a = 0;
+                    Array.prototype.forEach.call(selection, number => a = a + number + "0");
+                    console.log(a);
+                    this.selected=parseInt(a);
+                },*/
                 decideSend(evt) {
                     if (this.arrayPreferences){
                         this.errors = [];
