@@ -54,15 +54,6 @@ class VotingQuestionTestCase(BaseTestCase):
         q, _  = Question.objects.get_or_create()
         q1 = Question(desc='question1')
         q1.save()
-        
-#Tests añadidos por Alonso y David:
-     def test_create_preferences_question(self):
-        q = Question(desc='Preferences question', preferences=True)
-        q.save()
-        self.assertTrue(q.preferences = True)
-
-
-        
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
             opt.save()
@@ -106,6 +97,18 @@ class VotingQuestionTestCase(BaseTestCase):
         v = self.create_multiquestion_voting()
         self.assertEqual(v.question.all().count(), 2)
 
+    #Tests añadidos por Alonso y David:
+    def test_create_preferences_question(self):
+        q = Question(desc='Preferences question', preferences=True)
+        q.save()
+        self.assertTrue(q.preferences = True) 
+
+    def test_question_preferences_yesno(self):
+        q = Question(desc='Preferences question', preferences=True, si_no=True)
+        q.save()
+        self.assertRaises(ValidationError, q.clean)
+
+    #Fin de tests añadidos por
 
 #Test añadidos por Manuel
 class VotingModelTC(BaseTestCase):
