@@ -43,11 +43,19 @@ class VotingQuestionTestCase(BaseTestCase):
         q.save()
         assertRaises(ValidationError, Question, si_no, **kwds)
 #Fin de tests añadidos por Antonio y Jose
+
+#Tests añadidos por Alonso y David:
+     def test_create_preferences_question(self):
+        q = Question(desc='Preferences question', preferences=True)
+        q.save()
+        self.assertTrue(q.preferences = True)
+
+
         
 class VotingTestCase(BaseTestCase):
 
     def setUp(self):
-        super().setUp()
+U        super().setUp()
 
     def tearDown(self):
         super().tearDown()
