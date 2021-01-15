@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 
@@ -27,8 +28,8 @@ class VotingQuestionTestCase(BaseTestCase):
         q = Question(desc='si/no question', si_no=True)
         q.save()
         a = q.options.count()==2
-        option1 = q.options.all()[0]
-        option2 = q.options.all()[1]
+        opt1 = q.options.all()[0]
+        opt2 = q.options.all()[1]
         b = (opt1.number==1 and opt1.option=="Si")
         c = (opt2.number==2 and opt2.option=="No")
         self.assertTrue(a and b and c)
@@ -39,9 +40,12 @@ class VotingQuestionTestCase(BaseTestCase):
         q = Question(desc='si/no question', si_no=True)
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
-            opt.save()
-        q.save()
-        assertRaises(ValidationError, Question, si_no, **kwds)
+            self.assertRaises(ValidationError, opt.clean)
+            
+        
+
+
+    
 #Fin de tests añadidos por Antonio y Jose
 
 
@@ -170,6 +174,15 @@ class VotingTestCase(BaseTestCase):
 
         return v
 
+    def create_question(self):
+        q = Question(desc='test question', si_no='False', preferences='False')
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+        
+        return q
+
     def create_voters(self, v):
         for i in range(100):
             u, _ = User.objects.get_or_create(username='testvoter{}'.format(i))
@@ -206,30 +219,8 @@ class VotingTestCase(BaseTestCase):
                 mods.post('store', json=data)
         return clear
 
-    def test_complete_voting(self):
-        v = self.create_voting()
-        self.create_voters(v)
-
-        v.create_pubkey()
-        v.start_date = timezone.now()
-        v.save()
-
-        clear = self.store_votes(v)
-
-        self.login()  # set token
-        v.tally_votes(self.token)
-
-        tally = v.tally
-        tally.sort()
-        tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
-
-        for q in v.question.options.all():
-            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
-
-        for q in v.postproc:
-            self.assertEqual(tally.get(q["number"], 0), q["votes"])
-
     def test_create_voting_from_api(self):
+        q = self.create_question
         data = {'name': 'Example'}
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 401)
@@ -247,13 +238,13 @@ class VotingTestCase(BaseTestCase):
         data = {
             'name': 'Example',
             'desc': 'Description example',
-            'question': 'I want a ',
-            'question_opt': ['cat', 'dog', 'horse']
+            'ques': '1',
+            'question_opt': ['cat', 'dog', 'horse', 'tiger', 'frog']
         }
 
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 201)
-
+"""
     def test_update_voting(self):
         voting = self.create_voting()
 
