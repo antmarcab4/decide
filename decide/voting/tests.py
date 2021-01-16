@@ -1,6 +1,7 @@
 import random
 import itertools
 from django.utils import timezone
+from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -24,6 +25,16 @@ class VotingQuestionTestCase(BaseTestCase):
         super().tearDown()
 
 #Tests añadidos por Antonio y Jose:
+
+    def create_question(self):
+        q = Question(desc='test question', si_no='False', preferences='False')
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+        
+        return q
+
     def test_create_yes_no_question(self):
         q = Question(desc='si/no question', si_no=True)
         q.save()
@@ -41,22 +52,23 @@ class VotingQuestionTestCase(BaseTestCase):
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
             self.assertRaises(ValidationError, opt.clean)
-            
+
+    def test_delete_yes_no_question_aislada(self):
+
+        q = Question.objects.create(
+            desc='si/no question',
+            si_no=True,
+            preferences=False
+        )
         
+        url = reverse('delete_question', kwargs={'pk': q.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
 
-
-    
-#Fin de tests añadidos por Antonio y Jose
-
-
-#Tests añadidor por Marta
-    def create_onequestion_voting(self):
-        q, _  = Question.objects.get_or_create()
-        q1 = Question(desc='question1')
-        q1.save()
-        for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1))
-            opt.save()
+    def test_create_voting_with_yes_no_question(self):
+        q = Question(desc='si/no question', si_no=True)
+        q.save()
+        
         v = Voting(name='test voting')
         v.save()
 
@@ -64,26 +76,190 @@ class VotingQuestionTestCase(BaseTestCase):
                                           defaults={'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
-        v.question.add(q1)
+        v.question.add(q)
 
-        return v
-
-    def test_create_onequestion_voting(self):
-        v = self.create_onequestion_voting()
         self.assertEqual(v.question.all().count(), 1)
 
-    def create_multiquestion_voting(self):
-        q, _  = Question.objects.get_or_create()
-        q1 = Question(desc='question1')
-        q2 = Question(desc='question2')
-        q1.save()
-        q2.save()
-        for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1))
-            opt.save()
+    def test_delete_yes_no_question_relacionada_start(self):
+        q = Question(desc='si/no question', si_no=True)
+        q.save()
+        
         v = Voting(name='test voting')
         v.save()
 
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+
+        self.assertEqual(v.question.all().count(), 1)  
+
+        self.login()
+        data = {'action': 'start'}
+        response = self.client.put('/voting/{}/'.format(v.pk), data, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'Voting started')
+
+        q.delete()
+
+        self.assertEqual(v.question.all().count(), 0)  
+
+    def test_delete_yes_no_question_relacionada_stopped(self):
+        q = Question(desc='si/no question', si_no=True)
+        q.save()
+        
+        v = Voting(name='test voting')
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+
+        self.assertEqual(v.question.all().count(), 1)  
+
+        self.login()
+        data = {'action': 'start'}
+        response = self.client.put('/voting/{}/'.format(v.pk), data, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'Voting started')
+
+        data2 = {'action': 'stop'}
+        response2 = self.client.put('/voting/{}/'.format(v.pk), data2, format='json')
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(response2.json(), 'Voting stopped')
+
+        q.delete()
+
+        self.assertEqual(v.question.all().count(), 0)
+
+    def test_transform_empty_question_to_yes_no(self):
+        q = Question(desc='si_no question', si_no=False)
+        q.save()
+        self.assertTrue(q.si_no == False)
+        q.si_no=True
+        self.assertTrue(q.si_no == True)
+
+    def test_transform_question_with_one_option_to_yes_no(self):
+        q = Question(desc='si_no question', si_no=False)
+        q.save()
+        opt = QuestionOption(question=q, number= '3', option='option 3')
+        opt.save()
+        self.assertTrue(q.si_no == False)
+        q.si_no=True
+        self.assertTrue(q.si_no == True)
+        self.assertRaises(ValidationError, opt.clean)
+
+    def test_edit_yes_no_question_desc(self):
+        q = Question(desc='si_no question', si_no=True)
+        q.save()
+        self.assertTrue(q.si_no == True)
+        q.desc='si_no question modificada'
+        self.assertTrue(q.desc == 'si_no question modificada')
+
+    def test_edit_yes_no_question_add_opt(self):
+        q = Question(desc='si_no question', si_no=True)
+        q.save()
+        self.assertTrue(q.si_no == True)
+        #añadr opcion extra y comprobar que el clean no deja
+        opt = QuestionOption(question=q, option='option 3', number='3')
+        self.assertRaises(ValidationError, opt.clean)
+
+    #question included in a voting
+    def test_transform_empty_question_in_voting_to_yes_no(self):
+        q = Question(desc='si_no question', si_no=False)
+        q.save()
+        v = Voting(name='test voting')
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+        self.assertTrue(q.si_no == False)
+        q.si_no=True
+        self.assertTrue(q.si_no == True)
+
+    def test_transform_question_in_voting_with_one_option_to_yes_no(self):
+        q = Question(desc='si_no question', si_no=False)
+        q.save()
+        opt = QuestionOption(question=q, option='option 3', number='3')
+        opt.save()
+        v = Voting(name='test voting')
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+        self.assertTrue(q.si_no == False)
+        q.si_no=True
+        self.assertTrue(q.si_no == True)
+        self.assertRaises(ValidationError, opt.clean)
+
+    def test_edit_yes_no_question_desc_in_voting(self):
+        q = Question(desc='si_no question', si_no=True)
+        q.save()
+        v = Voting(name='test voting')
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+        self.assertTrue(q.si_no == True)
+        q.desc='si_no question modificada'
+        self.assertTrue(q.desc == 'si_no question modificada')
+
+    def test_edit_yes_no_question_in_voting_add_opt(self):
+        q = Question(desc='si_no question', si_no=True)
+        q.save()
+        v = Voting(name='test voting')
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+        self.assertTrue(q.si_no == True)
+        opt = QuestionOption(question=q, option='option 3', number='3')
+        self.assertRaises(ValidationError, opt.clean)
+
+
+#Fin de tests añadidos por Antonio y Jose
+
+
+#Tests añadidos por Marta
+    def test_create_onequestion_voting(self):
+        q1 = Question(desc='question1')
+        q1.save()
+
+        for i in range(5):
+            opt = QuestionOption(question=q1, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test voting')
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q1)
+
+        self.assertEqual(v.question.all().count(), 1)
+
+
+    def test_create_multiquestion_si_no_voting(self):
+        q1 = Question(desc='question1')
+        q1.save()
+        for i in range(5):
+            opt = QuestionOption(question=q1, option='option {}'.format(i+1))
+            opt.save()
+        q2 = Question(desc='question si/no', si_no=True)
+        q2.save()
+        v = Voting(name='test voting')
+        v.save()
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
                                           defaults={'me': True, 'name': 'test auth'})
         a.save()
@@ -91,11 +267,113 @@ class VotingQuestionTestCase(BaseTestCase):
         v.question.add(q1)
         v.question.add(q2)
 
-        return v
+        a = v.question.all().count() == 2
+        b = v.question.all()[1].si_no == True
+        self.assertTrue(a,b)
 
-    def test_create_multiquestion_voting(self):
-        v = self.create_multiquestion_voting()
-        self.assertEqual(v.question.all().count(), 2)
+    def test_create_multiquestion_all_types_voting(self):
+        q1 = Question(desc='question1')
+        q1.save()
+        for i in range(5):
+            opt = QuestionOption(question=q1, option='option {}'.format(i+1))
+            opt.save()
+        q2 = Question(desc='preferences', preferences=True)
+        q2.save()
+        for i in range(5):
+            opt = QuestionOption(question=q2, option='option {}'.format(i+1))
+            opt.save()
+        q3 = Question(desc='question si/no', si_no=True)
+        q3.save()
+        v = Voting(name='test voting')
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q1)
+        v.question.add(q2)
+        v.question.add(q3)
+
+        a = v.question.all().count() == 3
+        b = v.question.all()[1].preferences == True
+        c = v.question.all()[2].si_no == True
+        
+        self.assertTrue(a and b and c)
+
+    def test_create_multiquestion_preferences_voting(self):
+        q1 = Question(desc='question1')
+        q1.save()
+        for i in range(5):
+            opt = QuestionOption(question=q1, option='option {}'.format(i+1))
+            opt.save()
+        q2 = Question(desc='preferences', preferences=True)
+        q2.save()
+        for i in range(5):
+            opt = QuestionOption(question=q2, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test voting')
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q1)
+        v.question.add(q2)
+
+        a = v.question.all().count() == 2
+        b = v.question.all()[1].preferences == True
+        self.assertTrue(a,b)
+
+    def test_deleting_question_from_voting_multiquestion(self):
+        q1 = Question(desc="test question1")
+        q1.save()
+        q2 = Question(desc="test question2")
+        q2.save()
+        opt1 = QuestionOption(question=q1,option="option1")
+        opt2 = QuestionOption(question=q1,option="option2")
+        opt3 = QuestionOption(question=q2,option="option3")
+        opt4 = QuestionOption(question=q2,option="option4")
+        v=Voting(name="Votacion")
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        
+        v.auths.add(a)
+        v.question.add(q1)
+        v.question.add(q2)
+
+        self.assertEquals(v.question.all().count(), 2)
+
+        v.question.remove(q2)
+
+        self.assertEquals(v.question.all().count(),1)
+
+
+    def test_adding_question_to_voting_multiquestion(self):
+        q1 = Question(desc="test question1")
+        q1.save()
+        q2 = Question(desc="test question2")
+        q2.save()
+        opt1 = QuestionOption(question=q1,option="option1")
+        opt2 = QuestionOption(question=q1,option="option2")
+        opt3 = QuestionOption(question=q2,option="option3")
+        opt4 = QuestionOption(question=q2,option="option4")
+        v=Voting(name="Votacion")
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        
+        v.auths.add(a)
+        v.question.add(q1)
+
+        self.assertEquals(v.question.all().count(), 1)
+
+        v.question.add(q2)
+
+        self.assertEquals(v.question.all().count(),2)
+
+#Fin de tests añadidos por Marta    
+        
 
     #Tests añadidos por Alonso y David:
     def test_create_preferences_question(self):
@@ -199,11 +477,11 @@ class VotingModelTC(BaseTestCase):
         v = Voting.objects.get(name="Votacion")
         self.assertEquals(v.question.all().count(),3)
 
-'''     
+    
 class VotingTestCase(BaseTestCase):
 
     def setUp(self):
-U        super().setUp()
+        super().setUp()
 
     def tearDown(self):
         super().tearDown()
@@ -216,13 +494,14 @@ U        super().setUp()
         return k.encrypt(msg)
 
     def create_voting(self):
-        q = Question(desc='test question')
+        q = Question(desc='test question', si_no=False, preferences=False)
         q.save()
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
             opt.save()
-        v = Voting(name='test voting', question=q)
+        v = Voting(name='test voting')
         v.save()
+        v.question.add(q)
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
                                           defaults={'me': True, 'name': 'test auth'})
@@ -291,7 +570,7 @@ U        super().setUp()
         self.login()
         response = mods.post('voting', params=data, response=True)
         self.assertEqual(response.status_code, 400)
-
+    """
         data = {
             'name': 'Example',
             'desc': 'Description example',
@@ -301,13 +580,13 @@ U        super().setUp()
 
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 201)
-"""
+    """
     def test_update_voting(self):
         voting = self.create_voting()
 
         data = {'action': 'start'}
-        #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
-        #self.assertEqual(response.status_code, 401)
+        response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
+        self.assertEqual(response.status_code, 401)
 
         # login with user no admin
         self.login(user='noadmin')
@@ -378,4 +657,4 @@ U        super().setUp()
         data = {'action': 'tally'}
         response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Voting already tallied')'''
+        self.assertEqual(response.json(), 'Voting already tallied')
