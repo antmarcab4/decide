@@ -14,9 +14,9 @@ services:
   web:
     restart: always
     container_name: decide_web
-    image: guadalhorce:v1
+    image: decide_web:latest
     build: .
-    command: ash -c "echo y | python manage.py makemigrations --merge && ./manage.py migrate && gunicorn -w 5 decide.wsgi --timeout=500 -b 0.0.0.0:5000"
+    command: ash -c "python manage.py migrate && gunicorn -w 5 decide.wsgi --timeout=500 -b 0.0.0.0:5000"
     expose:
       - "5000"
     volumes:

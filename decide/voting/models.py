@@ -13,13 +13,17 @@ class Question(models.Model):
     si_no = models.BooleanField(default=False,verbose_name="Yes/No question", help_text="Check the box to automatically add the 'Si' and 'No' options. Take into account that no more options will be admited. ")
     preferences = models.BooleanField(default=False,verbose_name="Preferences", help_text="Check for creating a preference question")
 
+    def clean(self):
+        if self.si_no and self.preferences:
+            raise ValidationError('You can not make a question of the type yes/no and preferences at the same time')
+
     def __str__(self):
         return self.desc
-    
-    
+
 @receiver(post_save, sender=Question)
 def check_question(sender, instance, **kwargs):
-    if instance.si_no==True:
+    options = instance.options.all()
+    if instance.si_no==True and options.count()==0:
         option1 = QuestionOption(question=instance, number=1, option="Si")
         option1.save()
         option2 = QuestionOption(question=instance, number=2, option="No") 
@@ -33,9 +37,11 @@ class QuestionOption(models.Model):
     option = models.TextField()
 
     def clean(self):
-        
 
-        if self.question.si_no and self.question.options.count()==2:
+
+        options = self.question.options.all()
+        
+        if self.question.si_no and not options.count()==2:
             raise ValidationError('This type of question must not have other options added by you.')
 
         if self.question.si_no and not((self.number==1 and self.option=="Si") or (self.number==2 and self.option=="No")):
@@ -47,7 +53,7 @@ class QuestionOption(models.Model):
 
         if not self.number:
             self.number = self.question.options.count() + 2
-            
+
         return super().save()
 
     def __str__(self):
@@ -58,7 +64,6 @@ class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     question = models.ManyToManyField(Question, related_name='votings')
-
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
