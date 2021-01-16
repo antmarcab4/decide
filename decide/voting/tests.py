@@ -1,6 +1,7 @@
 import random
 import itertools
 from django.utils import timezone
+from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -24,6 +25,16 @@ class VotingQuestionTestCase(BaseTestCase):
         super().tearDown()
 
 #Tests añadidos por Antonio y Jose:
+
+    def create_question(self):
+        q = Question(desc='test question', si_no='False', preferences='False')
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+        
+        return q
+
     def test_create_yes_no_question(self):
         q = Question(desc='si/no question', si_no=True)
         q.save()
@@ -41,11 +52,89 @@ class VotingQuestionTestCase(BaseTestCase):
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
             self.assertRaises(ValidationError, opt.clean)
-            
+
+    def test_delete_yes_no_question_aislada(self):
+
+        q = Question.objects.create(
+            desc='si/no question',
+            si_no=True,
+            preferences=False
+        )
         
+        url = reverse('delete_question', kwargs={'pk': q.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
 
+    def test_create_voting_with_yes_no_question(self):
+        q = Question(desc='si/no question', si_no=True)
+        q.save()
+        
+        v = Voting(name='test voting')
+        v.save()
 
-    
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+
+        self.assertEqual(v.question.all().count(), 1)
+
+    def test_delete_yes_no_question_relacionada_start(self):
+        q = Question(desc='si/no question', si_no=True)
+        q.save()
+        
+        v = Voting(name='test voting')
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+
+        self.assertEqual(v.question.all().count(), 1)  
+
+        self.login()
+        data = {'action': 'start'}
+        response = self.client.put('/voting/{}/'.format(v.pk), data, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'Voting started')
+
+        q.delete()
+
+        self.assertEqual(v.question.all().count(), 0)  
+
+    def test_delete_yes_no_question_relacionada_stopped(self):
+        q = Question(desc='si/no question', si_no=True)
+        q.save()
+        
+        v = Voting(name='test voting')
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+
+        self.assertEqual(v.question.all().count(), 1)  
+
+        self.login()
+        data = {'action': 'start'}
+        response = self.client.put('/voting/{}/'.format(v.pk), data, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'Voting started')
+
+        data2 = {'action': 'stop'}
+        response2 = self.client.put('/voting/{}/'.format(v.pk), data2, format='json')
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(response2.json(), 'Voting stopped')
+
+        q.delete()
+
+        self.assertEqual(v.question.all().count(), 0)
+
 #Fin de tests añadidos por Antonio y Jose
 
 
@@ -173,15 +262,6 @@ U        super().setUp()
         v.auths.add(a)
 
         return v
-
-    def create_question(self):
-        q = Question(desc='test question', si_no='False', preferences='False')
-        q.save()
-        for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1))
-            opt.save()
-        
-        return q
 
     def create_voters(self, v):
         for i in range(100):
