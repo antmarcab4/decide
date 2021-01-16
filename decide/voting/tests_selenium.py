@@ -23,7 +23,7 @@ import time
 
 class AdminTestCase(StaticLiveServerTestCase):
 
-
+    
     def setUp(self):
 
         self.client = APIClient()
@@ -67,6 +67,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver = webdriver.Chrome(options=options)
 
         super().setUp()
+
             
     def tearDown(self):           
         super().tearDown()
@@ -76,7 +77,6 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.q=None
 
     def start_voting(self):                    
-        #self.driver.get(f'{self.live_server_url}/admin')
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
         time.sleep(1)
         self.driver.find_element(By.NAME, "_selected_action").click()
@@ -175,18 +175,10 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".success"), True)
 
 
-    def test_yesno_question(self):
-        self.driver.get(f'{self.live_server_url}/admin/login/?next=/admin/')
-        self.driver.find_element(By.ID, "id_username").click()
-        self.driver.find_element(By.ID, "id_username").send_keys("admin")
-        self.driver.find_element(By.ID, "id_password").click()
-        self.driver.find_element(By.ID, "id_password").send_keys("admin")
-        time.sleep(5)
-        self.driver.find_element(By.CSS_SELECTOR, ".model-question .addlink").click()
-        self.driver.find_element(By.ID, "id_desc").click()
-        self.driver.find_element(By.ID, "id_desc").send_keys("Prueba")
-        self.driver.find_element(By.ID, "id_si_no").click()
-        self.driver.find_element(By.NAME, "_save").click()
+
+
+
+   
 
 
 

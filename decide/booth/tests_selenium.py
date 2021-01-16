@@ -71,7 +71,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         census.save()
 
         options = webdriver.ChromeOptions()
-        #options.headless = True
+        options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
         super().setUp()
@@ -125,23 +125,14 @@ class AdminTestCase(StaticLiveServerTestCase):
         time.sleep(2)
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True)
         self.driver.find_element(By.LINK_TEXT, "logout").click()
-        time.sleep(5)
-        
-
-    '''
-    def test_authorized_voter(self):
-        self.login1()
-        self.start_voting()
-        self.login2()
-        time.sleep(2)
-        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".navbar"),True)'''
+        time.sleep(1)
     
     def test_zunauthorized_voter(self):
         self.login1()
         time.sleep(1)
         self.start_voting()
         self.login3()
-        time.sleep(5)
+        time.sleep(1)
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True)
 
 
