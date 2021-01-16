@@ -88,7 +88,7 @@ class VotingQuestionTestCase(BaseTestCase):
         b = v.question.all()[1].si_no == True
         self.assertTrue(a,b)
 
-    def test_create_multiquestion_preferences_voting(self):
+    def test_create_multiquestion_all_types_voting(self):
         q1 = Question(desc='question1')
         q1.save()
         for i in range(5):
@@ -117,7 +117,7 @@ class VotingQuestionTestCase(BaseTestCase):
         
         self.assertTrue(a and b and c)
 
-    def test_create_multiquestion_all_types_voting(self):
+    def test_create_multiquestion_preferences_voting(self):
         q1 = Question(desc='question1')
         q1.save()
         for i in range(5):
@@ -140,6 +140,56 @@ class VotingQuestionTestCase(BaseTestCase):
         a = v.question.all().count() == 2
         b = v.question.all()[1].preferences == True
         self.assertTrue(a,b)
+
+    def test_deleting_question_from_voting_multiquestion(self):
+        q1 = Question(desc="test question1")
+        q1.save()
+        q2 = Question(desc="test question2")
+        q2.save()
+        opt1 = QuestionOption(question=q1,option="option1")
+        opt2 = QuestionOption(question=q1,option="option2")
+        opt3 = QuestionOption(question=q2,option="option3")
+        opt4 = QuestionOption(question=q2,option="option4")
+        v=Voting(name="Votacion")
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        
+        v.auths.add(a)
+        v.question.add(q1)
+        v.question.add(q2)
+
+        self.assertEquals(v.question.all().count(), 2)
+
+        v.question.remove(q2)
+
+        self.assertEquals(v.question.all().count(),1)
+
+
+    def test_adding_question_to_voting_multiquestion(self):
+        q1 = Question(desc="test question1")
+        q1.save()
+        q2 = Question(desc="test question2")
+        q2.save()
+        opt1 = QuestionOption(question=q1,option="option1")
+        opt2 = QuestionOption(question=q1,option="option2")
+        opt3 = QuestionOption(question=q2,option="option3")
+        opt4 = QuestionOption(question=q2,option="option4")
+        v=Voting(name="Votacion")
+        v.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        
+        v.auths.add(a)
+        v.question.add(q1)
+
+        self.assertEquals(v.question.all().count(), 1)
+
+        v.question.add(q2)
+
+        self.assertEquals(v.question.all().count(),2)
+
+#Fin de tests añadidos por Marta    
         
 
 
