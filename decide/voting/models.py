@@ -13,6 +13,10 @@ class Question(models.Model):
     si_no = models.BooleanField(default=False,verbose_name="Yes/No question", help_text="Check the box to automatically add the 'Si' and 'No' options. Take into account that no more options will be admited. ")
     preferences = models.BooleanField(default=False,verbose_name="Preferences", help_text="Check for creating a preference question")
 
+    def clean(self):
+        if self.si_no and self.preferences:
+            raise ValidationError('You can not make a question of the type yes/no and preferences at the same time')
+
     def __str__(self):
         return self.desc
 
