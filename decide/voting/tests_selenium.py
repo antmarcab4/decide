@@ -43,6 +43,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         for i in range(3):
             optPref = QuestionOption(question=q, option='option {}'.format(i+1))
             optPref.save()
+            
 
         q2 = Question(desc='yes/no question', si_no=True)
         q2.save()
@@ -51,6 +52,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         v.save()
 
         v2= Voting(name='test voting yes no', id="3")
+        v2.save()
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
         a.save()
@@ -61,6 +63,13 @@ class AdminTestCase(StaticLiveServerTestCase):
         v2.question.add(q2)
         v.save()
         v2.save()
+
+        q1 = Question(desc='Simple question')
+        q1.save()   
+        for i in range(3):
+            optPref = QuestionOption(question=q1, option='option {}'.format(i+1))
+            optPref.save()
+
 
         census = Census(voting_id=2, voter_id=2)
         census.save()
