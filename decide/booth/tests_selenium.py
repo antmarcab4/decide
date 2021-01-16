@@ -29,26 +29,42 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.client = APIClient()
         mods.mock_query(self.client)
 
-        voter1 = User(username='voter', id="3")
+        voter1 = User(username='voter', id="7")
         voter1.set_password('voter')
         voter1.save()
-
 
         admin = User(username='admin', is_staff=True)
         admin.set_password('admin')
         admin.is_superuser = True
         admin.save()
 
+        q = Question(desc='Preferences question', preferences=True)
+        q.save()   
+        
+        for i in range(2):
+            optPref = QuestionOption(question=q, option='option {}'.format(i+1), number='{}'.format(i+1))
+            optPref.save()
+            
         q1 = Question(desc='Simple question1')
         q1.save()   
         for i in range(3):
             optPref = QuestionOption(question=q1, option='option {}'.format(i+1))
             optPref.save()
+        
         q2 = Question(desc='Simple question1')
         q2.save()   
         for i in range(3):
             optPref = QuestionOption(question=q2, option='option {}'.format(i+1))
             optPref.save()
+  
+        v1 = Voting(name='test voting', id="4")
+        v1.save()
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v1.auths.add(a)
+        v1.question.add(q)
+        v1.save()
+
         v = Voting(name='test voting', id="2")
         v.save()
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
@@ -66,8 +82,8 @@ class AdminTestCase(StaticLiveServerTestCase):
         v2.question.add(q1)
         v2.question.add(q2)
 
-        
-        census = Census(voting_id=2, voter_id=3)
+        census = Census(voting_id=2, voter_id=7)
+        census = Census(voting_id=4, voter_id=7)
         census.save()
 
         options = webdriver.ChromeOptions()
@@ -103,6 +119,57 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "password").click()
         self.driver.find_element(By.ID, "password").send_keys("voter")
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
+        
+    def login4(self):
+        self.driver.get(f'{self.live_server_url}/booth/4')
+        self.driver.find_element(By.ID, "username").click()
+        self.driver.find_element(By.ID, "username").send_keys("voter")
+        self.driver.find_element(By.ID, "password").click()
+        self.driver.find_element(By.ID, "password").send_keys("voter")
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()    
+  
+    def test_vote_pref(self):
+        self.login1()
+        self.start_voting()
+        self.login4()
+        time.sleep(1)
+        dropdown = self.driver.find_element(By.ID, "__BVID__11")
+        dropdown.find_element(By.ID, "q1").click()
+        dropdown = self.driver.find_element(By.ID, "__BVID__12")
+        dropdown.find_element(By.ID, "q2").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
+        self.assertEquals(len(self.driver.find_elements(By.CSS_SELECTOR, "div > ul > li")), 0)
+
+    def test_vote_pref_mod_wrong(self):
+        self.login1()
+        self.start_voting()
+        self.login4()
+        time.sleep(1)
+        dropdown = self.driver.find_element(By.ID, "__BVID__11")
+        dropdown.find_element(By.ID, "q1").click()
+        dropdown = self.driver.find_element(By.ID, "__BVID__12")
+        dropdown.find_element(By.ID, "q1").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
+        self.assertEquals(len(self.driver.find_elements(By.CSS_SELECTOR, "div > ul > li")), 1)
+        
+        dropdown = self.driver.find_element(By.ID, "__BVID__11")
+        dropdown.find_element(By.ID, "q1").click()
+        dropdown = self.driver.find_element(By.ID, "__BVID__12")
+        dropdown.find_element(By.ID, "q2").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
+        self.assertEquals(len(self.driver.find_elements(By.CSS_SELECTOR, "div > ul > li")), 0)
+    
+    def test_vote_pref_wrong(self):
+        self.login1()
+        self.start_voting()
+        self.login4()
+        time.sleep(1)
+        dropdown = self.driver.find_element(By.ID, "__BVID__11")
+        dropdown.find_element(By.ID, "q1").click()
+        dropdown = self.driver.find_element(By.ID, "__BVID__12")
+        dropdown.find_element(By.ID, "q1").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
+        self.assertEquals(len(self.driver.find_elements(By.CSS_SELECTOR, "div > ul > li")), 1)   
 
     def login3(self):
         self.driver.get(f'{self.live_server_url}/booth/3')
@@ -134,11 +201,3 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.login3()
         time.sleep(1)
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True)
-
-
-
-        
-
-
-
-  

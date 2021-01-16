@@ -375,6 +375,64 @@ class VotingQuestionTestCase(BaseTestCase):
 #Fin de tests añadidos por Marta    
         
 
+    #Tests añadidos por Alonso y David:
+    def test_create_preferences_question(self):
+        q = Question(desc='Preferences question', preferences=True)
+        q.save()
+        self.assertTrue(q.preferences == True)
+
+    def test_question_preferences_yesno(self):
+        q = Question(desc='Preferences question', preferences=True, si_no=True)
+        q.save()
+        self.assertRaises(ValidationError, q.clean)
+
+    def test_unique_voting_preference(self):
+        q = Question(desc='Preferences question', preferences=True)
+        q.save()   
+        for i in range(2):
+            optPref = QuestionOption(question=q, option='option {}'.format(i+1))
+            optPref.save()
+        v = Voting(name='test voting')
+        v.save() 
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+        v.save()
+
+        self.assertTrue(v.question.all()[0].preferences == True)
+        self.assertEquals(v.question.all()[0].options.all()[0].option,"option 1")
+        self.assertEquals(v.question.all()[0].options.all()[1].option,"option 2")
+
+    #Comprobar que podemos actualizar una question con preferences
+    def test_modify_preferences_question(self):
+        q = Question(desc='Preferences question', preferences=False)
+        q.save()
+        self.assertTrue(q.preferences == False)
+        q.preferences = True
+        q.save()
+        self.assertTrue(q.preferences == True)
+
+    def test_delete_preferences_question(self):
+        q = Question(desc='Preferences question', preferences=True)
+        q.save()   
+        for i in range(2):
+            optPref = QuestionOption(question=q, option='option {}'.format(i+1))
+            optPref.save()
+        v = Voting(name='test voting')
+        v.save() 
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+        v.save()
+
+        self.assertTrue(v.question.count() == 1)
+        v.question.remove(q)
+        self.assertTrue(v.question.count() == 0)
+
+#Fin de tests añadidos por Alonso y David
 
 #Test añadidos por Manuel
 class VotingModelTC(BaseTestCase):
