@@ -37,9 +37,6 @@ class QuestionOption(models.Model):
     option = models.TextField()
 
     def clean(self):
-        
-        if not self.number:
-            self.number = self.question.options.count() + 2
 
         if self.question.si_no and self.question.options.count()==2:
             raise ValidationError('This type of question must not have other options added by you.')
@@ -50,6 +47,9 @@ class QuestionOption(models.Model):
         
 
     def save(self):
+        
+        if not self.number:
+            self.number = self.question.options.count() + 2
         return super().save()
 
     def __str__(self):

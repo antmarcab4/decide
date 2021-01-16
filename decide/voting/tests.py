@@ -128,13 +128,31 @@ class VotingQuestionTestCase(BaseTestCase):
         self.assertEquals(v.question.all()[0].options.all()[1].option,"option 2")
 
     #Comprobar que podemos actualizar una question con preferences
-    def test_create_preferences_question(self):
+    def test_modify_preferences_question(self):
         q = Question(desc='Preferences question', preferences=False)
         q.save()
         self.assertTrue(q.preferences == False)
-        q = Question(preferences=True)
+        q.preferences = True
         q.save()
         self.assertTrue(q.preferences == True)
+
+    def test_delete_preferences_question(self):
+        q = Question(desc='Preferences question', preferences=True)
+        q.save()   
+        for i in range(2):
+            optPref = QuestionOption(question=q, option='option {}'.format(i+1))
+            optPref.save()
+        v = Voting(name='test voting')
+        v.save() 
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        v.question.add(q)
+        v.save()
+
+        self.assertTrue(v.question.count() == 1)
+        v.question.remove(q)
+        self.assertTrue(v.question.count() == 0)
 
 #Fin de tests añadidos por Alonso y David
 
