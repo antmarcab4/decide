@@ -38,6 +38,7 @@ class QuestionOption(models.Model):
 
     def clean(self):
 
+
         options = self.question.options.all()
         
         if self.question.si_no and not options.count()==2:
@@ -49,9 +50,10 @@ class QuestionOption(models.Model):
         
 
     def save(self):
+
         if not self.number:
             self.number = self.question.options.count() + 2
-        
+
         return super().save()
 
     def __str__(self):
