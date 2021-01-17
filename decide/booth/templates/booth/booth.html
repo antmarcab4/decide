@@ -84,17 +84,10 @@
                             <span v-model="selected[key]=arrayPreferences"></span>
                         </div>
                 </b-form-group>
-                <span>
-                    [[selected]]
-                </span>
                 <b-button type="button" variant="primary" v-on:click="decideSend">
                     {% trans "Vote" %}
                 </b-button>
-        
             </div> 
-
-
-
         </div>
     </div>
 {% endblock %}
@@ -115,7 +108,6 @@
     <script src="https://unpkg.com/vue"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
-
 
     <script>
         var voting = {{voting|safe}};
@@ -227,12 +219,6 @@
                     }
                     return cipher;
                 },
-             /*   convertArrayToNumber(selection) {
-                    var a = 0;
-                    Array.prototype.forEach.call(selection, number => a = a + number + "0");
-                    console.log(a);
-                    this.selected=parseInt(a);
-                },*/
                 decideSend(evt) {
                     if (this.arrayPreferences){
                         this.errors = [];

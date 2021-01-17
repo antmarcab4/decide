@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError
 from base import mods
 from base.models import Auth, Key
 
-
 class Question(models.Model):
     desc = models.TextField()
     si_no = models.BooleanField(default=False,verbose_name="Yes/No question", help_text="Check the box to automatically add the 'Si' and 'No' options. Take into account that no more options will be admited. ")
@@ -29,16 +28,12 @@ def check_question(sender, instance, **kwargs):
         option2 = QuestionOption(question=instance, number=2, option="No") 
         option2.save()
 
-
-
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
     def clean(self):
-
-
         options = self.question.options.all()
         
         if self.question.si_no and not options.count()==2:
@@ -55,7 +50,6 @@ class QuestionOption(models.Model):
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
 
-        
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)

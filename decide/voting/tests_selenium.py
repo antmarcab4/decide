@@ -44,6 +44,11 @@ class AdminTestCase(StaticLiveServerTestCase):
             optPref = QuestionOption(question=q, option='option {}'.format(i+1))
             optPref.save()
             
+        q1 = Question(desc='Simple question')
+        q1.save()   
+        for i in range(3):
+            optPref = QuestionOption(question=q1, option='option {}'.format(i+1))
+            optPref.save()
 
         q2 = Question(desc='yes/no question', si_no=True)
         q2.save()
@@ -64,13 +69,6 @@ class AdminTestCase(StaticLiveServerTestCase):
         v.save()
         v2.save()
 
-        q1 = Question(desc='Simple question')
-        q1.save()   
-        for i in range(3):
-            optPref = QuestionOption(question=q1, option='option {}'.format(i+1))
-            optPref.save()
-
-
         census = Census(voting_id=2, voter_id=2)
         census.save()
         census2 = Census(voting_id=3, voter_id=2)
@@ -81,7 +79,6 @@ class AdminTestCase(StaticLiveServerTestCase):
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
-
         super().setUp()
             
     def tearDown(self):           
@@ -91,11 +88,11 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.v=None
         self.q=None
 
+    #Métodos usados en los tests
     def start_voting(self):                    
-
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
         time.sleep(1)
-        self.driver.find_element(By.NAME, "_selected_action").click()
+        self.driver.find_element(By.ID, "action-toggle").click()
         time.sleep(1)
         dropdown = self.driver.find_element(By.NAME, "action")
         time.sleep(1)
@@ -103,11 +100,34 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.NAME, "action").click()
         self.driver.find_element(By.NAME, "index").click()
         
-        
     def login1(self):
         self.driver.get(f'{self.live_server_url}/admin')
         self.driver.find_element_by_id('id_username').send_keys("admin")
         self.driver.find_element_by_id('id_password').send_keys("admin",Keys.ENTER)
+
+    def login2(self):
+        self.driver.get(f'{self.live_server_url}/booth/2')
+        time.sleep(3)
+        self.driver.find_element_by_id('id_username').send_keys("voter1")
+        time.sleep(3)
+        self.driver.find_element_by_id('id_password').send_keys("voter1",Keys.ENTER)
+        time.sleep(3) 
+
+    def login3(self):
+        self.driver.get(f'{self.live_server_url}/booth/3')
+        self.driver.find_element(By.ID, "username").click()
+        self.driver.find_element(By.ID, "username").send_keys("WRONG")
+        self.driver.find_element(By.ID, "password").click()
+        self.driver.find_element(By.ID, "password").send_keys("WRONG")
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
+
+    def login4(self):
+        self.driver.get(f'{self.live_server_url}/booth/3')
+        self.driver.find_element(By.ID, "username").click()
+        self.driver.find_element(By.ID, "username").send_keys("voter")
+        self.driver.find_element(By.ID, "password").click()
+        self.driver.find_element(By.ID, "password").send_keys("voter")
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
 
     def create_simple_question1(self):
         self.driver.find_element(By.LINK_TEXT, "Questions").click()
@@ -126,7 +146,6 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_options-2-option").click()
         self.driver.find_element(By.ID, "id_options-2-option").send_keys("testOption3")
         self.driver.find_element(By.NAME, "_save").click()
-
 
     def create_multiquestion_voting(self):
         self.driver.find_element(By.CSS_SELECTOR, ".model-voting .addlink").click()
@@ -158,10 +177,8 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_options-2-option").click()
         self.driver.find_element(By.ID, "id_options-2-option").send_keys("testOption3")
         self.driver.find_element(By.NAME, "_save").click()
-        
         self.driver.find_element(By.LINK_TEXT, "Voting").click()
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
-
         self.driver.find_element(By.CSS_SELECTOR, ".model-voting .addlink").click()
         self.driver.find_element(By.ID, "id_name").send_keys("testVoting")
         self.driver.find_element(By.ID, "id_desc").click()
@@ -171,44 +188,25 @@ class AdminTestCase(StaticLiveServerTestCase):
         dropdown = self.driver.find_element(By.ID, "id_auths")
         dropdown.find_element(By.XPATH, "//option[. = 'http://localhost:8000']").click()
         self.driver.find_element(By.NAME, "_save").click()
-
     
     #Tests por Marta
     def test_create_simple_question(self):
         self.login1()
         self.create_simple_question1()
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".success"), True)
-
     
     def test_create_multiquestion_voting(self):
         self.login1()
         self.create_multiquestion_voting()
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".success"), True)
-        
 
     def test_create_singlequesstion_voting(self):
         self.login1()
         self.create_singlequestion_voting()
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".success"), True)
-
+    #Fin de tests por Marta
 
     #Tests por Jose
-    def login2(self):
-        self.driver.get(f'{self.live_server_url}/booth/2')
-        time.sleep(3)
-        self.driver.find_element_by_id('id_username').send_keys("voter1")
-        time.sleep(3)
-        self.driver.find_element_by_id('id_password').send_keys("voter1",Keys.ENTER)
-        time.sleep(3) 
-
-    def login3(self):
-        self.driver.get(f'{self.live_server_url}/booth/3')
-        self.driver.find_element(By.ID, "username").click()
-        self.driver.find_element(By.ID, "username").send_keys("WRONG")
-        self.driver.find_element(By.ID, "password").click()
-        self.driver.find_element(By.ID, "password").send_keys("WRONG")
-        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
-
     def test_yesno_question(self):
         self.driver.get(f'{self.live_server_url}/admin/login/?next=/admin/')
         self.driver.find_element(By.ID, "id_username").click()
@@ -223,14 +221,6 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.NAME, "_save").click()
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".success"), True)
 
-    def login4(self):
-        self.driver.get(f'{self.live_server_url}/booth/3')
-        self.driver.find_element(By.ID, "username").click()
-        self.driver.find_element(By.ID, "username").send_keys("voter")
-        self.driver.find_element(By.ID, "password").click()
-        self.driver.find_element(By.ID, "password").send_keys("voter")
-        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
-
     def test_voting_yes_no(self):
         self.login1()
         time.sleep(1)
@@ -242,7 +232,8 @@ class AdminTestCase(StaticLiveServerTestCase):
         time.sleep(2)
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"), True)
         self.driver.find_element(By.LINK_TEXT, "logout").click()
-    
+    #Fin de tests por Jose
+
     #Tests de Antonio
     def test_crearyesnomal(self):
         self.login1()
@@ -289,3 +280,26 @@ class AdminTestCase(StaticLiveServerTestCase):
         time.sleep(1)
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".success"), True)
     #Fin tests de Antonio
+
+    #Tests por David
+    def test_create_question_pref(self):
+        self.login1()
+        self.driver.find_element(By.CSS_SELECTOR, ".model-question .addlink").click()
+        self.driver.find_element(By.ID, "id_desc").click()
+        self.driver.find_element(By.ID, "id_desc").send_keys("Prueba selenium")
+        self.driver.find_element(By.ID, "id_preferences").click()
+        self.driver.find_element(By.ID, "id_options-0-option").click()
+        self.driver.find_element(By.ID, "id_options-0-option").send_keys("c")
+        self.driver.find_element(By.ID, "id_options-0-number").click()
+        self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
+        self.driver.find_element(By.ID, "id_options-1-option").click()
+        self.driver.find_element(By.ID, "id_options-1-option").send_keys("f")
+        self.driver.find_element(By.ID, "id_options-1-number").click()
+        self.driver.find_element(By.ID, "id_options-1-number").send_keys("2")
+        self.driver.find_element(By.ID, "id_options-2-option").click()
+        self.driver.find_element(By.ID, "id_options-2-option").send_keys("a")
+        self.driver.find_element(By.ID, "id_options-2-number").click()
+        self.driver.find_element(By.ID, "id_options-2-number").send_keys("3")
+        self.driver.find_element(By.NAME, "_save").click()
+        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".success"),True)
+    #Fin tests de David

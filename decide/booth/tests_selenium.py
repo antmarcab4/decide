@@ -23,7 +23,6 @@ import time
 
 class AdminTestCase(StaticLiveServerTestCase):
 
-
     def setUp(self):
 
         self.client = APIClient()
@@ -57,18 +56,19 @@ class AdminTestCase(StaticLiveServerTestCase):
             optPref = QuestionOption(question=q2, option='option {}'.format(i+1))
             optPref.save()
   
-        v1 = Voting(name='test voting', id="4")
-        v1.save()
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
         a.save()
+        a2, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
+        a2.save()
+
+        v1 = Voting(name='test voting', id="4")
+        v1.save()
         v1.auths.add(a)
         v1.question.add(q)
         v1.save()
 
         v = Voting(name='test voting', id="2")
         v.save()
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
-        a.save()
         v.auths.add(a)
         v.question.add(q1)
         v.question.add(q2)
@@ -76,8 +76,6 @@ class AdminTestCase(StaticLiveServerTestCase):
 
         v2 = Voting(name='test voting 2', id='3')
         v2.save()
-        a2, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
-        a2.save()
         v2.auths.add(a2)
         v2.question.add(q1)
         v2.question.add(q2)
@@ -101,6 +99,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.v=None
         self.q=None
     
+    #Métodos usados en los tests
     def start_voting(self):                    
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
         self.driver.find_element(By.ID, "action-toggle").click()
@@ -122,6 +121,14 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "password").send_keys("voter")
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
         
+    def login3(self):
+        self.driver.get(f'{self.live_server_url}/booth/3')
+        self.driver.find_element(By.ID, "username").click()
+        self.driver.find_element(By.ID, "username").send_keys("WRONG")
+        self.driver.find_element(By.ID, "password").click()
+        self.driver.find_element(By.ID, "password").send_keys("WRONG")
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click() 
+
     def login4(self):
         self.driver.get(f'{self.live_server_url}/booth/4')
         self.driver.find_element(By.ID, "username").click()
@@ -129,6 +136,15 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "password").click()
         self.driver.find_element(By.ID, "password").send_keys("voter")
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()   
+
+    def login5(self):
+        self.driver.get(f'{self.live_server_url}/booth/3')
+        time.sleep(1)
+        self.driver.find_element(By.ID, "username").click()
+        self.driver.find_element(By.ID, "username").send_keys("voter")
+        self.driver.find_element(By.ID, "password").click()
+        self.driver.find_element(By.ID, "password").send_keys("voter")
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
 
     def stop_voting(self):
         self.driver.find_element(By.NAME, "_selected_action").click()
@@ -139,23 +155,32 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.NAME, "action").click()
         self.driver.find_element(By.NAME, "index").click()
 
-    def login3(self):
-        self.driver.get(f'{self.live_server_url}/booth/3')
-        self.driver.find_element(By.ID, "username").click()
-        self.driver.find_element(By.ID, "username").send_keys("WRONG")
-        self.driver.find_element(By.ID, "password").click()
-        self.driver.find_element(By.ID, "password").send_keys("WRONG")
-        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()   
-
-    def login5(self):
-        self.driver.get(f'{self.live_server_url}/booth/3')
+    #Tests por Marta
+    def test_vote_in_multiquestion_voting(self):
+        self.login1()
         time.sleep(1)
-        self.driver.find_element(By.ID, "username").click()
-        self.driver.find_element(By.ID, "username").send_keys("voter")
-        self.driver.find_element(By.ID, "password").click()
-        self.driver.find_element(By.ID, "password").send_keys("voter")
-        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()  
+        self.start_voting()
+        self.login2()
+        time.sleep(2)
+        self.driver.find_element(By.CSS_SELECTOR, "#\\__BVID__11 > .custom-control:nth-child(1) > .custom-control-label").click()
+        time.sleep(2)
+        self.driver.find_element(By.CSS_SELECTOR, "#\\__BVID__16 > .custom-control:nth-child(2) > .custom-control-label").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
+        time.sleep(2)
+        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True)
+        self.driver.find_element(By.LINK_TEXT, "logout").click()
+        time.sleep(1)
+    
+    def test_unauthorized_voter(self):
+        self.login1()
+        time.sleep(1)
+        self.start_voting()
+        self.login3()
+        time.sleep(1)
+        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True) 
+    #Fin de tests por Marta
 
+    #Tests por Alonso y David
     def test_vote_pref(self):
         self.login1()
         self.start_voting()
@@ -198,29 +223,6 @@ class AdminTestCase(StaticLiveServerTestCase):
         dropdown.find_element(By.ID, "q1").click()
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
         self.assertEquals(len(self.driver.find_elements(By.CSS_SELECTOR, "div > ul > li")), 1)   
-    
-    def test_vote_in_multiquestion_voting(self):
-        self.login1()
-        time.sleep(1)
-        self.start_voting()
-        self.login2()
-        time.sleep(2)
-        self.driver.find_element(By.CSS_SELECTOR, "#\\__BVID__11 > .custom-control:nth-child(1) > .custom-control-label").click()
-        time.sleep(2)
-        self.driver.find_element(By.CSS_SELECTOR, "#\\__BVID__16 > .custom-control:nth-child(2) > .custom-control-label").click()
-        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
-        time.sleep(2)
-        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True)
-        self.driver.find_element(By.LINK_TEXT, "logout").click()
-        time.sleep(1)
-    
-    def test_unauthorized_voter(self):
-        self.login1()
-        time.sleep(1)
-        self.start_voting()
-        self.login3()
-        time.sleep(1)
-        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True) 
 
     def test_votacionCerrada(self):
         self.login1()
@@ -235,27 +237,6 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
         time.sleep(1)
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True)
-
-    def test_create_question_pref(self):
-        self.login1()
-        self.driver.find_element(By.CSS_SELECTOR, ".model-question .addlink").click()
-        self.driver.find_element(By.ID, "id_desc").click()
-        self.driver.find_element(By.ID, "id_desc").send_keys("Prueba selenium")
-        self.driver.find_element(By.ID, "id_preferences").click()
-        self.driver.find_element(By.ID, "id_options-0-option").click()
-        self.driver.find_element(By.ID, "id_options-0-option").send_keys("c")
-        self.driver.find_element(By.ID, "id_options-0-number").click()
-        self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
-        self.driver.find_element(By.ID, "id_options-1-option").click()
-        self.driver.find_element(By.ID, "id_options-1-option").send_keys("f")
-        self.driver.find_element(By.ID, "id_options-1-number").click()
-        self.driver.find_element(By.ID, "id_options-1-number").send_keys("2")
-        self.driver.find_element(By.ID, "id_options-2-option").click()
-        self.driver.find_element(By.ID, "id_options-2-option").send_keys("a")
-        self.driver.find_element(By.ID, "id_options-2-number").click()
-        self.driver.find_element(By.ID, "id_options-2-number").send_keys("3")
-        self.driver.find_element(By.NAME, "_save").click()
-        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".success"),True)
 
     def test_update_asignar_pregunta(self):
         self.login1()
@@ -274,3 +255,4 @@ class AdminTestCase(StaticLiveServerTestCase):
         time.sleep(1)
         self.assertTrue(self.driver.find_element(By.ID, "__BVID__11"), True)
         self.assertTrue(self.driver.find_element(By.ID, "__BVID__12"), True)
+    #Fin tests Alonso y David
