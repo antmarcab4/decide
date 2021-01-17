@@ -85,10 +85,6 @@ class Voting(models.Model):
         return [[i['a'], i['b']] for i in votes]
 
     def tally_votes(self, token=''):
-        '''
-        The tally is a shuffle and then a decrypt
-        '''
-        
         votes = self.get_votes(token)
 
         auth = self.auths.first()

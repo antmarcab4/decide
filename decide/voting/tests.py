@@ -101,7 +101,7 @@ class VotingQuestionTestCase(BaseTestCase):
         a.save()
         v.auths.add(a)
         v.question.add(q)
-        self.assertEqual(v.question.all().count(), 1)  
+        self.assertEqual(v.question.all().count(), 1)
         self.login()
         data = {'action': 'start'}
         response = self.client.put('/voting/{}/'.format(v.pk), data, format='json')
@@ -373,12 +373,12 @@ class VotingQuestionTestCase(BaseTestCase):
 
     def test_delete_preferences_question(self):
         q = Question(desc='Preferences question', preferences=True)
-        q.save()   
+        q.save()
         for i in range(2):
             optPref = QuestionOption(question=q, option='option {}'.format(i+1))
             optPref.save()
         v = Voting(name='test voting')
-        v.save() 
+        v.save()
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
@@ -423,7 +423,7 @@ class VotingModelTC(BaseTestCase):
     def test_create_multi(self):
         v = Voting.objects.get(name="Votacion")
         self.assertEquals(v.name,"Votacion")
-    
+
     def test_questions_multi(self):
         v = Voting.objects.get(name="Votacion")
         self.assertEquals(v.question.all().count(),3)

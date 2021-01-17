@@ -37,7 +37,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         for i in range(3):
             optPref = QuestionOption(question=q, option='option {}'.format(i+1))
             optPref.save()
-            
+
         q1 = Question(desc='Simple question')
         q1.save()
         for i in range(3):
@@ -148,7 +148,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_desc").send_keys("testVotingDesc")
         dropdown = self.driver.find_element(By.ID, "id_question")
         dropdown.find_element(By.XPATH, "//option[. = 'Simple question']").click()
-        dropdown = self.driver.find_element(By.ID, "id_question")   
+        dropdown = self.driver.find_element(By.ID, "id_question")
         dropdown.find_element(By.XPATH, "//option[. = 'Preferences question']").click()
         dropdown = self.driver.find_element(By.ID, "id_auths")
         dropdown.find_element(By.XPATH, "//option[. = 'http://localhost:8000']").click()

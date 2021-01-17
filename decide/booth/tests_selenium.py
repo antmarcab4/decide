@@ -47,7 +47,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         for i in range(3):
             optPref = QuestionOption(question=q2, option='option {}'.format(i+1))
             optPref.save()
-  
+
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
         a.save()
         a2, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={'me': True, 'name': 'test auth'})
