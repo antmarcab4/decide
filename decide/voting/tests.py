@@ -510,7 +510,6 @@ class VotingTestCase(BaseTestCase):
         return clear
 
     def test_create_voting_from_api(self):
-        q = self.create_question
         data = {'name': 'Example'}
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 401)
