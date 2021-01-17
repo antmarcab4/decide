@@ -77,8 +77,10 @@ class AdminTestCase(StaticLiveServerTestCase):
         census2.save()
 
         options = webdriver.ChromeOptions()
+        options.add_argument('--no-sandbox')
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
+
 
         super().setUp()
             
