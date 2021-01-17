@@ -10,7 +10,7 @@ RUN pip install ipython
 
 WORKDIR /app
 
-RUN git clone -b develop-guadalhorce https://github.com/davtorcue/decide.git .
+RUN git clone https://github.com/davtorcue/decide.git .
 RUN pip install -r requirements.txt
 
 WORKDIR /app/decide
