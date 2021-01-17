@@ -93,7 +93,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         dropdown.find_element(By.XPATH, "//option[. = 'Start']").click()
         self.driver.find_element(By.NAME, "action").click()
         self.driver.find_element(By.NAME, "index").click()
-        
+
     def login1(self):
         self.driver.get(f'{self.live_server_url}/admin')
         self.driver.find_element_by_id('id_username').send_keys("admin")

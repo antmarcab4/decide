@@ -160,7 +160,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True)
         self.driver.find_element(By.LINK_TEXT, "logout").click()
         time.sleep(1)
-    
+
     def test_unauthorized_voter(self):
         self.login1()
         time.sleep(1)
