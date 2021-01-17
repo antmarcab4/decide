@@ -51,19 +51,43 @@
 
             <!-- Voting -->
             <div v-if="!signup">
-                <h2>[[ voting.question.desc ]]</h2>
-                <b-form-group v-for="opt in voting.question.options" :key="opt.number">
-                    <b-form-radio v-model="selected"
-                                  :id="'q' + opt.number"
-                                  name="question"
-                                  :value="opt.number">
-                        [[ opt.option ]]
-                    </b-form-radio>
+                <b-form-group v-for="ques,key in voting.question" :key="key">
+                    <h2>[[ ques.desc ]]</h2>
+                        <div v-if="ques.preferences == false">
+                            <b-form-radio-group v-model="selected[key]" stacked>
+                                <b-form-radio v-for="opt in ques.options"  
+                                            :id="'q' + ques.id + opt.number"
+                                            name="question"
+                                            :value="opt.number">
+                                    [[ opt.option ]]
+                                </b-form-radio>
+                            </b-form-radio-group>
+                        </div>
+                        <div v-if = "ques.preferences == true">
+                            <p v-if="errors.length">
+                                <ul>
+                                <li v-for="error in errors">[[ error ]]</li>
+                                </ul>
+                            </p>
+                            <div v-for ="qopt,key1 in ques.options" >
+                                <span>Preferencia [[key1+1]]:</span>
+                                <b-form-select v-model="arrayPreferences[key1]">
+                                    <option disabled>Seleccione una opción</option>
+                                    <option v-for= "opt in ques.options" 
+                                        :id="'q' + opt.number" 
+                                        name="question"
+                                        :value="opt.number">
+                                        [[opt.option]]
+                                    </option>
+                                </b-form-select> 
+                            </div>
+                            <span v-model="selected[key]=arrayPreferences"></span>
+                        </div>
                 </b-form-group>
                 <b-button type="button" variant="primary" v-on:click="decideSend">
                     {% trans "Vote" %}
                 </b-button>
-            </div>
+            </div> 
         </div>
     </div>
 {% endblock %}
@@ -91,9 +115,11 @@
             delimiters: ['[[', ']]'],
             el: '#app-booth',
             data: {
+                errors: [],
                 keybits: {{ KEYBITS }},
                 voting: voting,
-                selected: "",
+                selected: [],
+                arrayPreferences: [],
                 signup: true,
                 alertShow: false,
                 alertMsg: "",
@@ -180,26 +206,47 @@
                     this.signup = true;
                 },
                 decideEncrypt() {
-                    var bigmsg = BigInt.fromJSONObject(this.selected.toString());
-                    var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                    var a = 0;
+                    if(this.selected.length>1){
+                        Array.prototype.forEach.call(this.selected, number => a = a + number + "0");
+                        var bigmsg = BigInt.fromJSONObject(a);
+                        var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                        console.log(a);
+                    }else{
+                        console.log(this.selected[0].toString())
+                        var bigmsg = BigInt.fromJSONObject(this.selected[0].toString());
+                        var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                    }
                     return cipher;
                 },
                 decideSend(evt) {
-                    evt.preventDefault();
-                    var v = this.decideEncrypt();
-                    var data = {
-                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
-                        voting: this.voting.id,
-                        voter: this.user.id,
-                        token: this.token
+                    if (this.arrayPreferences){
+                        this.errors = [];
+                        uniqueSet = new Set();
+                        uniqueSet = new Set(this.arrayPreferences);
+                        if (uniqueSet.size!=this.arrayPreferences.length){
+                        this.errors.push('You must select all possible values');
+                        }
+                        evt.preventDefault(); 
                     }
-                    this.postData("{% url "gateway" "store" "/" %}", data)
-                        .then(data => {
-                            this.showAlert("success", '{% trans "Conglatulations. Your vote has been sent" %}');
-                        })
-                        .catch(error => {
-                            this.showAlert("danger", '{% trans "Error: " %}' + error);
-                        });
+
+                    if(this.errors.length==0){
+                        evt.preventDefault();
+                        var v = this.decideEncrypt();
+                        var data = {
+                           vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                            voting: this.voting.id,
+                            voter: this.user.id,
+                            token: this.token
+                        }
+                        this.postData("{% url "gateway" "store" "/" %}", data)
+                            .then(data => {
+                                this.showAlert("success", '{% trans "Conglatulations. Your vote has been sent" %}');
+                            })
+                            .catch(error => {
+                                this.showAlert("danger", '{% trans "Error: " %}' + error);
+                            });
+                    }    
                 },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;

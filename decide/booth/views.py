@@ -4,6 +4,7 @@ from django.conf import settings
 from django.http import Http404
 
 from base import mods
+from django import forms
 
 
 # TODO: check permissions and census
@@ -29,3 +30,9 @@ class BoothView(TemplateView):
         context['KEYBITS'] = settings.KEYBITS
 
         return context
+
+    def allUnique(self):
+        array = mods.get('arrayPreferences')
+        if any(i in array or array.add(i) for i in x):
+            raise forms.ValidationError("No permitido")
+        return array
