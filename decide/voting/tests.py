@@ -1,6 +1,4 @@
 import random
-import itertools
-from django.utils import timezone
 from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import User

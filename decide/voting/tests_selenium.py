@@ -182,7 +182,6 @@ class AdminTestCase(StaticLiveServerTestCase):
         dropdown = self.driver.find_element(By.ID, "id_auths")
         dropdown.find_element(By.XPATH, "//option[. = 'http://localhost:8000']").click()
         self.driver.find_element(By.NAME, "_save").click()
-    
     #Tests por Marta
     def test_create_simple_question(self):
         self.login1()

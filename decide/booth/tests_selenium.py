@@ -194,7 +194,6 @@ class AdminTestCase(StaticLiveServerTestCase):
         dropdown.find_element(By.ID, "q1").click()
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
         self.assertEquals(len(self.driver.find_elements(By.CSS_SELECTOR, "div > ul > li")), 1)
-        
         dropdown = self.driver.find_element(By.ID, "__BVID__11")
         dropdown.find_element(By.ID, "q1").click()
         dropdown = self.driver.find_element(By.ID, "__BVID__12")
