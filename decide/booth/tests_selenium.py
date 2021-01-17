@@ -1,14 +1,10 @@
-from django.test import TestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.contrib.auth.models import User
 
 from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from base import mods
 from census.models import Census
@@ -18,7 +14,6 @@ from voting.models import Voting
 from mixnet.models import Auth
 from django.conf import settings
 
-from base.tests import BaseTestCase
 import time
 
 class AdminTestCase(StaticLiveServerTestCase):
@@ -38,20 +33,17 @@ class AdminTestCase(StaticLiveServerTestCase):
         admin.save()
 
         q = Question(desc='Preferences question', preferences=True)
-        q.save()   
-        
+        q.save()
         for i in range(2):
             optPref = QuestionOption(question=q, option='option {}'.format(i+1), number='{}'.format(i+1))
             optPref.save()
-            
         q1 = Question(desc='Simple question1')
-        q1.save()   
+        q1.save()
         for i in range(3):
             optPref = QuestionOption(question=q1, option='option {}'.format(i+1))
             optPref.save()
-        
         q2 = Question(desc='Simple question1')
-        q2.save()   
+        q2.save()
         for i in range(3):
             optPref = QuestionOption(question=q2, option='option {}'.format(i+1))
             optPref.save()
@@ -89,18 +81,16 @@ class AdminTestCase(StaticLiveServerTestCase):
         options.add_argument('--no-sandbox')
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
-
         super().setUp()
-            
-    def tearDown(self):           
+
+    def tearDown(self):
         super().tearDown()
         self.driver.quit()
         self.client = None
         self.v=None
         self.q=None
-    
     #Métodos usados en los tests
-    def start_voting(self):                    
+    def start_voting(self):
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
         self.driver.find_element(By.ID, "action-toggle").click()
         dropdown = self.driver.find_element(By.NAME, "action")
@@ -127,7 +117,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "username").send_keys("WRONG")
         self.driver.find_element(By.ID, "password").click()
         self.driver.find_element(By.ID, "password").send_keys("WRONG")
-        self.driver.find_element(By.CSS_SELECTOR, ".btn").click() 
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
 
     def login4(self):
         self.driver.get(f'{self.live_server_url}/booth/4')
@@ -135,7 +125,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "username").send_keys("voter")
         self.driver.find_element(By.ID, "password").click()
         self.driver.find_element(By.ID, "password").send_keys("voter")
-        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()   
+        self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
 
     def login5(self):
         self.driver.get(f'{self.live_server_url}/booth/3')
@@ -177,7 +167,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.start_voting()
         self.login3()
         time.sleep(1)
-        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True) 
+        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".alert"),True)
     #Fin de tests por Marta
 
     #Tests por Alonso y David
@@ -222,7 +212,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         dropdown = self.driver.find_element(By.ID, "__BVID__12")
         dropdown.find_element(By.ID, "q1").click()
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
-        self.assertEquals(len(self.driver.find_elements(By.CSS_SELECTOR, "div > ul > li")), 1)   
+        self.assertEquals(len(self.driver.find_elements(By.CSS_SELECTOR, "div > ul > li")), 1)
 
     def test_votacionCerrada(self):
         self.login1()

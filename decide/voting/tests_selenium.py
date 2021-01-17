@@ -1,14 +1,10 @@
-from django.test import TestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.contrib.auth.models import User
 
 from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from base import mods
 from census.models import Census
@@ -18,7 +14,6 @@ from voting.models import Voting
 from mixnet.models import Auth
 from django.conf import settings
 
-from base.tests import BaseTestCase
 import time
 
 class AdminTestCase(StaticLiveServerTestCase):
@@ -38,14 +33,13 @@ class AdminTestCase(StaticLiveServerTestCase):
         admin.save()
 
         q = Question(desc='Preferences question', preferences=True)
-        q.save()   
-        
+        q.save()
         for i in range(3):
             optPref = QuestionOption(question=q, option='option {}'.format(i+1))
             optPref.save()
             
         q1 = Question(desc='Simple question')
-        q1.save()   
+        q1.save()
         for i in range(3):
             optPref = QuestionOption(question=q1, option='option {}'.format(i+1))
             optPref.save()
@@ -81,7 +75,7 @@ class AdminTestCase(StaticLiveServerTestCase):
 
         super().setUp()
             
-    def tearDown(self):           
+    def tearDown(self):
         super().tearDown()
         self.driver.quit()
         self.client = None
@@ -89,7 +83,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.q=None
 
     #Métodos usados en los tests
-    def start_voting(self):                    
+    def start_voting(self):
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
         time.sleep(1)
         self.driver.find_element(By.ID, "action-toggle").click()
@@ -111,7 +105,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element_by_id('id_username').send_keys("voter1")
         time.sleep(3)
         self.driver.find_element_by_id('id_password').send_keys("voter1",Keys.ENTER)
-        time.sleep(3) 
+        time.sleep(3)
 
     def login3(self):
         self.driver.get(f'{self.live_server_url}/booth/3')
@@ -152,7 +146,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("testVoting")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("testVotingDesc")
-        dropdown = self.driver.find_element(By.ID, "id_question")   
+        dropdown = self.driver.find_element(By.ID, "id_question")
         dropdown.find_element(By.XPATH, "//option[. = 'Simple question']").click()
         dropdown = self.driver.find_element(By.ID, "id_question")   
         dropdown.find_element(By.XPATH, "//option[. = 'Preferences question']").click()

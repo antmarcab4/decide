@@ -82,14 +82,14 @@ class VotingQuestionTestCase(BaseTestCase):
         a.save()
         v.auths.add(a)
         v.question.add(q)
-        self.assertEqual(v.question.all().count(), 1)  
+        self.assertEqual(v.question.all().count(), 1)
         self.login()
         data = {'action': 'start'}
         response = self.client.put('/voting/{}/'.format(v.pk), data, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Voting started')
         q.delete()
-        self.assertEqual(v.question.all().count(), 0)  
+        self.assertEqual(v.question.all().count(), 0)
 
     def test_delete_yes_no_question_relacionada_stopped(self):
         q = Question(desc='si/no question', si_no=True)
@@ -332,8 +332,8 @@ class VotingQuestionTestCase(BaseTestCase):
         v.question.add(q2)
         self.assertEquals(v.question.all().count(),2)
 
-#Fin de tests añadidos por Marta    
-        
+#Fin de tests añadidos por Marta
+
 #Tests añadidos por Alonso y David:
     def test_create_preferences_question(self):
         q = Question(desc='Preferences question', preferences=True)
@@ -347,12 +347,12 @@ class VotingQuestionTestCase(BaseTestCase):
 
     def test_unique_voting_preference(self):
         q = Question(desc='Preferences question', preferences=True)
-        q.save()   
+        q.save()
         for i in range(2):
             optPref = QuestionOption(question=q, option='option {}'.format(i+1))
             optPref.save()
         v = Voting(name='test voting')
-        v.save() 
+        v.save()
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
                                           defaults={'me': True, 'name': 'test auth'})
         a.save()
@@ -431,11 +431,11 @@ class VotingModelTC(BaseTestCase):
     def test_questions_options(self):
         q = Question.objects.get(desc="test question3")
         v = Voting.objects.get(name="Votacion")
-        self.assertEquals(v.question.all()[2], q)    
+        self.assertEquals(v.question.all()[2], q)
 
 #Fin de tests añadidos por Manuel
 
-#Tests de decide adaptados a las nuevas funcionalidades    
+#Tests de decide adaptados a las nuevas funcionalidades
 class VotingTestCase(BaseTestCase):
 
     def setUp(self):

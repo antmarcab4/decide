@@ -34,5 +34,5 @@ class BoothView(TemplateView):
     def allUnique(self):
         array = mods.get('arrayPreferences')
         if any(i in array or array.add(i) for i in x):
-            raise forms.ValidationError("ESO NI SE TE OCURRA") 
-        return array      
+            raise forms.ValidationError("No permitido")
+        return array

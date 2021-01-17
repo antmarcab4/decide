@@ -25,7 +25,7 @@ def check_question(sender, instance, **kwargs):
     if instance.si_no==True and options.count()==0:
         option1 = QuestionOption(question=instance, number=1, option="Si")
         option1.save()
-        option2 = QuestionOption(question=instance, number=2, option="No") 
+        option2 = QuestionOption(question=instance, number=2, option="No")
         option2.save()
 
 class QuestionOption(models.Model):
@@ -35,14 +35,13 @@ class QuestionOption(models.Model):
 
     def clean(self):
         options = self.question.options.all()
-        
         if self.question.si_no and not options.count()==2:
             raise ValidationError('This type of question must not have other options added by you.')
 
         if self.question.si_no and not((self.number==1 and self.option=="Si") or (self.number==2 and self.option=="No")):
             raise ValidationError('This type of question must not have other options added by you.')
 
-    def save(self):      
+    def save(self):
         if not self.number:
             self.number = self.question.options.count() + 2
         return super().save()
