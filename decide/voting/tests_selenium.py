@@ -187,7 +187,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.login1()
         self.create_simple_question1()
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".success"), True)
-    
+
     def test_create_multiquestion_voting(self):
         self.login1()
         self.create_multiquestion_voting()

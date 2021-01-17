@@ -200,7 +200,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         dropdown.find_element(By.ID, "q2").click()
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
         self.assertEquals(len(self.driver.find_elements(By.CSS_SELECTOR, "div > ul > li")), 0)
-    
+
     def test_vote_pref_wrong(self):
         self.login1()
         self.start_voting()
