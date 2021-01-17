@@ -477,6 +477,11 @@ class VotingModelTC(BaseTestCase):
         v = Voting.objects.get(name="Votacion")
         self.assertEquals(v.question.all().count(),3)
 
+    def test_questions_options(self):
+        q = Question.objects.get(desc="test question3")
+        v = Voting.objects.get(name="Votacion")
+        self.assertEquals(v.question.all()[2], q)    
+
     
 class VotingTestCase(BaseTestCase):
 

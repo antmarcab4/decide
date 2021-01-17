@@ -89,7 +89,6 @@ class AdminTestCase(StaticLiveServerTestCase):
 
         options = webdriver.ChromeOptions()
         options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
@@ -150,6 +149,7 @@ class AdminTestCase(StaticLiveServerTestCase):
 
     def login5(self):
         self.driver.get(f'{self.live_server_url}/booth/1')
+        time.sleep(1)
         self.driver.find_element(By.ID, "username").click()
         self.driver.find_element(By.ID, "username").send_keys("voter")
         self.driver.find_element(By.ID, "password").click()
@@ -261,25 +261,16 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.login1()
         time.sleep(1)
         self.driver.find_element(By.CSS_SELECTOR, ".model-voting .addlink").click()
-        time.sleep(1)
         self.driver.find_element(By.ID, "id_name").click()
-        time.sleep(1)
         self.driver.find_element(By.ID, "id_name").send_keys("MeteLaPregunta")
-        time.sleep(1)
         self.driver.find_element(By.ID, "id_desc").click()
-        time.sleep(1)
         self.driver.find_element(By.ID, "id_desc").send_keys("Desc")
-        time.sleep(1)
         dropdown = self.driver.find_element(By.ID, "id_question")
-        time.sleep(1)
         dropdown.find_element(By.XPATH, "//option[. = 'Preferences question']").click()
-        time.sleep(1)
         dropdown = self.driver.find_element(By.ID, "id_auths")
-        time.sleep(1)
         dropdown.find_element(By.XPATH, "//option[. = 'http://localhost:8000']").click()
         time.sleep(1)
         self.driver.find_element(By.NAME, "_save").click()
-        time.sleep(1)
         self.driver.get(f'{self.live_server_url}/admin')
         time.sleep(1)
         self.start_voting()
