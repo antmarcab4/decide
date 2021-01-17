@@ -74,7 +74,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver = webdriver.Chrome(options=options)
 
         super().setUp()
-            
+
     def tearDown(self):
         super().tearDown()
         self.driver.quit()
@@ -177,7 +177,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("testVoting")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("testVotingDesc")
-        dropdown = self.driver.find_element(By.ID, "id_question")   
+        dropdown = self.driver.find_element(By.ID, "id_question")
         dropdown.find_element(By.XPATH, "//option[. = 'testQuestion2']").click()
         dropdown = self.driver.find_element(By.ID, "id_auths")
         dropdown.find_element(By.XPATH, "//option[. = 'http://localhost:8000']").click()

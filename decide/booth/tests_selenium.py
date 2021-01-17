@@ -110,7 +110,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "password").click()
         self.driver.find_element(By.ID, "password").send_keys("voter")
         self.driver.find_element(By.CSS_SELECTOR, ".btn").click()
-        
+
     def login3(self):
         self.driver.get(f'{self.live_server_url}/booth/3')
         self.driver.find_element(By.ID, "username").click()

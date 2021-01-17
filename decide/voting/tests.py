@@ -298,10 +298,10 @@ class VotingQuestionTestCase(BaseTestCase):
         q1.save()
         q2 = Question(desc="test question2")
         q2.save()
-        opt1 = QuestionOption(question=q1,option="option1")
-        opt2 = QuestionOption(question=q1,option="option2")
-        opt3 = QuestionOption(question=q2,option="option3")
-        opt4 = QuestionOption(question=q2,option="option4")
+        QuestionOption(question=q1,option="option1")
+        QuestionOption(question=q1,option="option2")
+        QuestionOption(question=q2,option="option3")
+        QuestionOption(question=q2,option="option4")
         v=Voting(name="Votacion")
         v.save()
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
@@ -400,12 +400,12 @@ class VotingModelTC(BaseTestCase):
         q2.save()
         q3 = Question(desc="test question3")
         q3.save()
-        opt1 = QuestionOption(question=q1,option="option1")
-        opt2 = QuestionOption(question=q1,option="option2")
-        opt3 = QuestionOption(question=q2,option="option3")
-        opt4 = QuestionOption(question=q2,option="option4")
-        opt5 = QuestionOption(question=q3,option="option5")
-        opt6 = QuestionOption(question=q3,option="option6")
+        QuestionOption(question=q1,option="option1")
+        QuestionOption(question=q1,option="option2")
+        QuestionOption(question=q2,option="option3")
+        QuestionOption(question=q2,option="option4")
+        QuestionOption(question=q3,option="option5")
+        QuestionOption(question=q3,option="option6")
         v=Voting(name="Votacion")
         v.save()
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
@@ -521,7 +521,7 @@ class VotingTestCase(BaseTestCase):
         self.login()
         response = mods.post('voting', params=data, response=True)
         self.assertEqual(response.status_code, 400)
- 
+
     def test_update_voting(self):
         voting = self.create_voting()
         data = {'action': 'start'}
