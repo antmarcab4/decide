@@ -1,3 +1,4 @@
+'''
 import datetime
 import random
 from django.contrib.auth.models import User
@@ -193,3 +194,4 @@ class StoreTextCase(BaseTestCase):
         self.voting.save()
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)
+'''
