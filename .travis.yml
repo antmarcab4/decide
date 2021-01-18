@@ -27,11 +27,11 @@ install:
 script:
   - cd decide
   - cp travis_local_settings.py local_settings.py
+  - cp decide/base_settings.py decide/settings.py
+  - cp ../base_requirements.txt ../requirements.txt
   - coverage run --branch --source=. ./manage.py test --keepdb --with-xunit
   - coverage xml
   - python-codacy-coverage -r coverage.xml
-  - cp decide/heroku_settings.py decide/settings.py
-  - cp ../heroku_requirements.txt ../requirements.txt
 deploy:
   provider: heroku
   app: guadalhorce-heroku
