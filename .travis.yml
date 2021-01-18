@@ -30,8 +30,10 @@ script:
   - coverage run --branch --source=. ./manage.py test --keepdb --with-xunit
   - coverage xml
   - python-codacy-coverage -r coverage.xml
+  - cp decide/decide/heroku_settings.py decide/decide/settings.py
+  - cp heroku_requirements.txt requirements.txt
 deploy:
   provider: heroku
   app: guadalhorce-heroku
   strategy: git
-  apikey: bb4dcc32-020a-4734-9851-9bc73a7362ee
+  apikey: $HEROKU_AUTH_TOKENs
