@@ -36,4 +36,4 @@ deploy:
   provider: heroku
   app: guadalhorce-heroku
   strategy: git
-  apikey: $HEROKU_AUTH_TOKENs
+  apikey: $HEROKU_AUTH_TOKEN
