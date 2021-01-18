@@ -30,8 +30,8 @@ script:
   - coverage run --branch --source=. ./manage.py test --keepdb --with-xunit
   - coverage xml
   - python-codacy-coverage -r coverage.xml
-  - cp decide/decide/heroku_settings.py decide/decide/settings.py
-  - cp heroku_requirements.txt requirements.txt
+  - cp decide/heroku_settings.py decide/settings.py
+  - cp ../heroku_requirements.txt ../requirements.txt
 deploy:
   provider: heroku
   app: guadalhorce-heroku
