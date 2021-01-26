@@ -33,14 +33,16 @@ class VotingQuestionTestCase(BaseTestCase):
         return q
 
     def test_create_yes_no_question(self):
-        q = Question(desc='si/no question', si_no=True)
-        q.save()
-        a = q.options.count()==2
-        opt1 = q.options.all()[0]
-        opt2 = q.options.all()[1]
-        b = (opt1.number==1 and opt1.option=="Si")
-        c = (opt2.number==2 and opt2.option=="No")
-        self.assertTrue(a and b and c)
+        q = Question(desc='si/no question', si_no=True) 
+        q.save() 
+        a = q.options.count()==3 
+        opt1 = q.options.all()[0] 
+        opt2 = q.options.all()[1] 
+        opt3 = q.options.all()[2] 
+        b = (opt1.number==1 and opt1.option=="Si") 
+        c = (opt2.number==2 and opt2.option=="No")  
+        d = (opt3.number==3 and opt3.option=="No sabe, no contesta") 
+        self.assertTrue(a and b and c and d) 
 
     def test_create_yes_no_question_wrong(self):
         q = Question(desc='si/no question', si_no=True)
