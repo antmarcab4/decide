@@ -19,35 +19,40 @@ class Question(models.Model):
     def __str__(self):
         return self.desc
 
-@receiver(post_save, sender=Question)
-def check_question(sender, instance, **kwargs):
-    options = instance.options.all()
-    if instance.si_no==True and options.count()==0:
-        option1 = QuestionOption(question=instance, number=1, option="Si")
-        option1.save()
-        option2 = QuestionOption(question=instance, number=2, option="No")
-        option2.save()
+@receiver(post_save, sender=Question) 
+def check_question(sender, instance, **kwargs): 
+    options = instance.options.all() 
+    if instance.si_no==True and options.count()==0: 
+        option1 = QuestionOption(question=instance, number=1, option="Si") 
+        option1.save() 
+        option2 = QuestionOption(question=instance, number=2, option="No") 
+        option2.save() 
+        #Cambio para la presentación 
+        option3 = QuestionOption(question=instance, number=3, option="No sabe, no contesta") 
+        option3.save() 
+  
 
-class QuestionOption(models.Model):
-    question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
-    number = models.PositiveIntegerField(blank=True, null=True)
-    option = models.TextField()
+class QuestionOption(models.Model): 
+    question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE) 
+    number = models.PositiveIntegerField(blank=True, null=True) 
+    option = models.TextField() 
 
-    def clean(self):
-        options = self.question.options.all()
-        if self.question.si_no and not options.count()==2:
-            raise ValidationError('This type of question must not have other options added by you.')
+    def clean(self): 
+        options = self.question.options.all() 
+        if self.question.si_no and not options.count()==3: 
+            raise ValidationError('This type of question must not have other options added by you.') 
 
-        if self.question.si_no and not((self.number==1 and self.option=="Si") or (self.number==2 and self.option=="No")):
-            raise ValidationError('This type of question must not have other options added by you.')
+        if self.question.si_no and not((self.number==1 and self.option=="Si") or (self.number==2 and self.option=="No") or (self.number==3 and self.option=="No sabe, no contesta")): 
+            raise ValidationError('This type of question must not have other options added by you.') 
 
-    def save(self):
-        if not self.number:
-            self.number = self.question.options.count() + 2
-        return super().save()
+    def save(self): 
+        if not self.number: 
+            self.number = self.question.options.count() + 2 
 
-    def __str__(self):
-        return '{} ({})'.format(self.option, self.number)
+        return super().save() 
+        
+    def __str__(self): 
+        return '{} ({})'.format(self.option, self.number) 
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)
